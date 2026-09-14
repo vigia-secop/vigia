@@ -1,0 +1,440 @@
+"""Traslada la capa cruda a la llave de negocio (propuesta 2026-09-04).
+
+    python -m vigia.crudo.rellave --dsn ...
+
+Lee `crudo_registro`, recalcula identidad y hash con **las mismas funciones que
+usa la ingesta** —esa es la razón de que esto sea Python y no SQL— y escribe en
+`crudo_registro_rellave`, que la migración 005 dejó creada con la llave
+primaria puesta. El motor colapsa por sí solo lo que resulte igual.
+
+No borra nada. Al terminar, la tabla vieja queda como
+`crudo_registro_antes_de_005` y volver atrás son dos `RENAME`.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import logging
+import os
+import sys
+import time
+from dataclasses import dataclass
+from typing import Iterator
+
+import psycopg
+
+from vigia.crudo.modelo import hash_contenido, identidad_de_negocio
+from vigia.crudo.repositorio import ErrorAlmacen
+from vigia.ingest.datasets import DATASETS
+
+CODIGO_USO = 2
+CODIGO_FALLO = 1
+
+#: Filas por lote. La tabla nacional son cientos de miles y no caben en memoria.
+LOTE = 2000
+
+#: Cada cuántas filas se dice por dónde va.
+#:
+#: La primera versión de este módulo no decía nada hasta terminar. Sobre las
+#: 407 000 filas reales estuvo quince minutos en silencio y no había forma de
+#: distinguir «va lento» de «se colgó», que es exactamente cuando alguien mata
+#: un proceso a medias. Una migración larga sin señal de vida es una migración
+#: que nadie deja terminar.
+PASO_DE_AVISO = 20_000
+
+TABLA_ORIGEN = "crudo_registro"
+TABLA_DESTINO = "crudo_registro_rellave"
+TABLA_RESPALDO = "crudo_registro_antes_de_005"
+
+#: Tabla intermedia, sin llave y sin registro de escritura (`UNLOGGED`).
+#:
+#: POR QUÉ EXISTE. La primera versión insertaba fila a fila con `executemany`
+#: contra la tabla final, que tiene llave primaria. Sobre las 407 000 filas
+#: reales llevaba dieciocho minutos sin terminar: son 407 000 comprobaciones de
+#: índice y otros tantos viajes de ida y vuelta al servidor.
+#:
+#: `COPY` no admite `ON CONFLICT`, así que el traslado va en dos tiempos: se
+#: vuelca todo aquí de un tirón —una sola operación en flujo, sin índice que
+#: mantener— y después una única sentencia del servidor deduplica y pasa lo
+#: bueno a la tabla final. Lo que hacía el cliente 407 000 veces lo hace el
+#: motor una.
+TABLA_COPIA = "crudo_registro_rellave_copia"
+
+_LEER = f"""
+SELECT dataset, id_fila_fuente, hash_contenido, contenido::text, consultado_en
+FROM {TABLA_ORIGEN}
+"""
+
+_CREAR_COPIA = f"""
+DROP TABLE IF EXISTS {TABLA_COPIA};
+CREATE UNLOGGED TABLE {TABLA_COPIA} (
+    dataset        text        NOT NULL,
+    id_fila_fuente text        NOT NULL,
+    hash_contenido text        NOT NULL,
+    contenido      jsonb       NOT NULL,
+    consultado_en  timestamptz NOT NULL
+)
+"""
+
+_VOLCAR = f"""
+COPY {TABLA_COPIA}
+    (dataset, id_fila_fuente, hash_contenido, contenido, consultado_en)
+FROM STDIN
+"""
+
+#: `DISTINCT ON` antes del `INSERT`: dos filas con la misma llave dentro del
+#: mismo `INSERT` no chocan entre sí —`ON CONFLICT` solo mira lo que YA está en
+#: la tabla—, así que sin esto la sentencia falla por llave duplicada. Se queda
+#: la de `consultado_en` más reciente, que es la versión que de verdad vale.
+_PASAR_A_DESTINO = f"""
+INSERT INTO {TABLA_DESTINO}
+    (dataset, id_fila_fuente, hash_contenido, contenido, consultado_en)
+SELECT DISTINCT ON (dataset, id_fila_fuente, hash_contenido)
+       dataset, id_fila_fuente, hash_contenido, contenido, consultado_en
+FROM {TABLA_COPIA}
+ORDER BY dataset, id_fila_fuente, hash_contenido, consultado_en DESC
+ON CONFLICT (dataset, id_fila_fuente, hash_contenido) DO NOTHING
+"""
+
+_SOLTAR_COPIA = f"DROP TABLE IF EXISTS {TABLA_COPIA}"
+
+registro_log = logging.getLogger("vigia.crudo.rellave")
+
+
+@dataclass(frozen=True)
+class ResumenRellave:
+    """Lo que hizo el traslado. Todos los conteos son verificables."""
+
+    leidas: int
+    escritas: int
+    sin_identidad: int
+    datasets_desconocidos: int
+
+    def __post_init__(self) -> None:
+        for nombre, valor in vars(self).items():
+            if valor < 0:
+                raise ValueError(f"{nombre} no puede ser negativo: {valor}")
+        if self.escritas > self.leidas:
+            raise ValueError(
+                f"se escribieron {self.escritas} filas de {self.leidas} leídas: "
+                "trasladar no puede crear filas"
+            )
+
+    @property
+    def colapsadas(self) -> int:
+        """Filas que resultaron ser la misma bajo la llave nueva.
+
+        Es simplemente lo leído menos lo escrito. Las filas sin identidad y
+        las de datasets desconocidos NO se restan: también se trasladan, así
+        que ya están contadas en `escritas`. Restarlas las contaría dos veces
+        —error cometido y corregido el 2026-09-04 con una prueba que sabía la
+        respuesta de antemano—.
+
+        Se reporta siempre, incluso en cero, porque un colapso silencioso es
+        indistinguible de una pérdida de datos.
+        """
+        return self.leidas - self.escritas
+
+
+def _filas(conexion: psycopg.Connection) -> Iterator[tuple]:
+    """Lee el origen por partes, con `contenido` como TEXTO.
+
+    Se pide `::text` a propósito: el contenido se vuelca tal cual y no hace
+    falta que psycopg lo convierta a diccionario y de vuelta. Sobre 60 000
+    filas de 3 KB eso solo ya es la mitad del tiempo de lectura.
+
+    ESTA LECTURA VA EN SU PROPIA CONEXIÓN. Un `COPY` toma el control del
+    protocolo de la conexión mientras dura, así que intercalar un `FETCH` del
+    cursor con nombre por el mismo cable es una violación del protocolo: la
+    primera versión de este módulo lo hacía y se quedaba colgada sin decir
+    nada. Descubierto el 2026-09-04 midiendo por partes.
+    """
+    with conexion.cursor(name="rellave_lectura") as cursor:
+        cursor.itersize = LOTE
+        cursor.execute(_LEER)
+        yield from cursor
+
+
+def trasladar(
+    conexion: psycopg.Connection,
+    *,
+    dsn_lectura: str | None = None,
+    conexion_lectura: psycopg.Connection | None = None,
+    avisar: bool = True,
+) -> ResumenRellave:
+    """Rellena la tabla de destino desde la de origen. No renombra nada.
+
+    Necesita DOS conexiones: una escribe con `COPY` y la otra lee. Si no se
+    pasa la segunda, se abre una con `dsn_lectura`; y si tampoco hay DSN, con
+    el de la conexión dada —que sirve en pruebas, pero **no lleva contraseña**:
+    `psycopg` no la expone en `info.dsn`, así que fuera de una autenticación
+    local confiada hay que pasar el DSN entero—.
+    """
+    leidas = escritas = sin_identidad = desconocidos = 0
+    lote: list[tuple] = []
+    arranque = time.monotonic()
+
+    total: int | None = None
+    if avisar:
+        with conexion.cursor() as cursor:
+            cursor.execute(f"SELECT count(*) FROM {TABLA_ORIGEN}")
+            fila = cursor.fetchone()
+            total = int(fila[0]) if fila else None
+        print(f"   {total} filas por trasladar", flush=True)
+
+    def avisar_avance() -> None:
+        if not avisar or leidas % PASO_DE_AVISO:
+            return
+        transcurrido = time.monotonic() - arranque
+        ritmo = leidas / transcurrido if transcurrido else 0
+        falta = ""
+        if total and ritmo:
+            segundos = max(0.0, (total - leidas) / ritmo)
+            falta = f" · quedan ~{segundos / 60:.1f} min"
+        print(
+            f"   {leidas} de {total or '?'} · {ritmo:.0f} filas/s{falta}",
+            flush=True,
+        )
+
+    propia = conexion_lectura is None
+    lectura = conexion_lectura or psycopg.connect(dsn_lectura or conexion.info.dsn)
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute(_CREAR_COPIA)
+
+            with cursor.copy(_VOLCAR) as copia:
+                for dataset, id_viejo, hash_viejo, texto, consultado_en in _filas(lectura):
+                    leidas += 1
+                    avisar_avance()
+                    descriptor = DATASETS.get(dataset)
+
+                    # Una sola vuelta de JSON por fila: se analiza para poder
+                    # calcular identidad y hash, y el TEXTO original se vuelca
+                    # tal cual. En una migración eso además es lo correcto: lo
+                    # guardado tiene que quedar igual a lo que había.
+                    contenido = json.loads(texto)
+
+                    if descriptor is None:
+                        # Un dataset que el código ya no conoce. Se traslada
+                        # tal cual: tirarlo sería perder serie histórica por un
+                        # cambio de alcance.
+                        desconocidos += 1
+                        copia.write_row((dataset, id_viejo, hash_viejo, texto, consultado_en))
+                        continue
+
+                    id_nuevo = identidad_de_negocio(contenido, descriptor.campos_identidad)
+                    if id_nuevo is None:
+                        # Fila escrita bajo la llave vieja cuyo contenido no
+                        # trae el identificador de negocio. Se conserva con su
+                        # identidad anterior: la capa normalizada ya sabe
+                        # descartarla y contarla.
+                        sin_identidad += 1
+                        copia.write_row((dataset, id_viejo, hash_viejo, texto, consultado_en))
+                        continue
+
+                    copia.write_row(
+                        (dataset, id_nuevo, hash_contenido(contenido), texto, consultado_en)
+                    )
+
+            if avisar:
+                print(f"   {leidas} filas volcadas; deduplicando en el servidor...", flush=True)
+            cursor.execute(_PASAR_A_DESTINO)
+            cursor.execute(_SOLTAR_COPIA)
+
+            cursor.execute(f"SELECT count(*) FROM {TABLA_DESTINO}")
+            fila = cursor.fetchone()
+            escritas = int(fila[0]) if fila else 0
+    finally:
+        if propia:
+            lectura.close()
+
+    return ResumenRellave(
+        leidas=leidas,
+        escritas=escritas,
+        sin_identidad=sin_identidad,
+        datasets_desconocidos=desconocidos,
+    )
+
+
+def _expresion_identidad(campos: tuple[str, ...]) -> str:
+    """La misma identidad que `identidad_de_negocio`, escrita en SQL.
+
+    Se construye desde `campos_identidad`, no a mano, para que no pueda
+    divergir de la de Python al añadir un dataset. Igual que allí: el primer
+    campo manda y los siguientes se añaden con «|» solo si vienen poblados.
+    """
+    def limpio(campo: str) -> str:
+        return f"nullif(btrim(contenido ->> '{campo}'), '')"
+
+    expresion = limpio(campos[0])
+    for campo in campos[1:]:
+        expresion = (
+            f"CASE WHEN {limpio(campo)} IS NULL THEN {expresion} "
+            f"ELSE {expresion} || '|' || {limpio(campo)} END"
+        )
+    return expresion
+
+
+@dataclass(frozen=True)
+class Comprobacion:
+    """Qué se esperaba y qué hay, por dataset."""
+
+    dataset: str
+    filas_origen: int
+    identidades_origen: int
+    filas_destino: int
+    identidades_destino: int
+
+    @property
+    def cuadra(self) -> bool:
+        """Ninguna identidad del origen puede faltar en el destino.
+
+        Es la comprobación que importa. Que sobren filas es normal —una misma
+        identidad con dos versiones de negocio son dos filas—; que FALTEN
+        identidades significa que el traslado fundió cosas distintas, y eso es
+        pérdida de datos.
+        """
+        return self.identidades_destino >= self.identidades_origen
+
+
+def comprobar(conexion: psycopg.Connection) -> list[Comprobacion]:
+    """Compara identidades esperadas contra las que quedaron. No modifica nada."""
+    resultado: list[Comprobacion] = []
+    with conexion.cursor() as cursor:
+        for nombre, descriptor in sorted(DATASETS.items()):
+            expresion = _expresion_identidad(descriptor.campos_identidad)
+            cursor.execute(
+                f"SELECT count(*), count(DISTINCT {expresion}) "
+                f"FROM {TABLA_ORIGEN} WHERE dataset = %s",
+                (nombre,),
+            )
+            filas_origen, identidades_origen = cursor.fetchone()
+            cursor.execute(
+                f"SELECT count(*), count(DISTINCT id_fila_fuente) "
+                f"FROM {TABLA_DESTINO} WHERE dataset = %s",
+                (nombre,),
+            )
+            filas_destino, identidades_destino = cursor.fetchone()
+            resultado.append(
+                Comprobacion(
+                    dataset=nombre,
+                    filas_origen=int(filas_origen),
+                    identidades_origen=int(identidades_origen or 0),
+                    filas_destino=int(filas_destino),
+                    identidades_destino=int(identidades_destino or 0),
+                )
+            )
+    return resultado
+
+
+class TrasladoNoCuadra(RuntimeError):
+    """El destino perdió identidades que el origen tenía. No se intercambia."""
+
+
+def intercambiar(conexion: psycopg.Connection, *, comprobado: bool = False) -> None:
+    """Pone la tabla nueva en su sitio y guarda la vieja. Nada se borra.
+
+    Se niega si la comprobación no cuadra. La puerta está aquí y no en el
+    guion que llama, para que no haya forma de intercambiar sin pasar por
+    ella.
+    """
+    if not comprobado:
+        malas = [c for c in comprobar(conexion) if not c.cuadra]
+        if malas:
+            detalle = "; ".join(
+                f"{c.dataset}: {c.identidades_origen} identidades en el origen "
+                f"y solo {c.identidades_destino} en el destino"
+                for c in malas
+            )
+            raise TrasladoNoCuadra(
+                f"el traslado perdió identidades y NO se intercambia — {detalle}"
+            )
+    with conexion.cursor() as cursor:
+        cursor.execute(f"ALTER TABLE {TABLA_ORIGEN} RENAME TO {TABLA_RESPALDO}")
+        cursor.execute(f"ALTER TABLE {TABLA_DESTINO} RENAME TO {TABLA_ORIGEN}")
+
+
+def _imprimir_comprobacion(comprobaciones: list[Comprobacion]) -> None:
+    print()
+    print("Comprobación (identidades esperadas contra las que quedaron):")
+    for c in comprobaciones:
+        marca = "OK  " if c.cuadra else "MAL "
+        print(
+            f"   {marca}{c.dataset:10s} origen {c.filas_origen:>8} filas / "
+            f"{c.identidades_origen:>8} identidades  ->  destino "
+            f"{c.filas_destino:>8} filas / {c.identidades_destino:>8} identidades"
+        )
+
+
+def main(argv: list[str] | None = None) -> int:
+    analizador = argparse.ArgumentParser(
+        prog="vigia.crudo.rellave",
+        description="Traslada la capa cruda a la llave de negocio (migración 005).",
+    )
+    analizador.add_argument("--dsn", default=os.environ.get("VIGIA_DSN"))
+    analizador.add_argument(
+        "--intercambiar",
+        action="store_true",
+        help="Además de trasladar, pone la tabla nueva en su sitio.",
+    )
+    analizador.add_argument(
+        "--solo-comprobar",
+        action="store_true",
+        help="No traslada: compara lo que hay en origen y destino y se va.",
+    )
+    opciones = analizador.parse_args(argv)
+
+    if not opciones.dsn:
+        print("falta la cadena de conexión: pásala con --dsn o en VIGIA_DSN", file=sys.stderr)
+        return CODIGO_USO
+
+    logging.basicConfig(
+        level=os.environ.get("VIGIA_LOG", "INFO"),
+        format="%(asctime)s %(levelname)s %(message)s",
+    )
+
+    try:
+        with psycopg.connect(opciones.dsn) as conexion:
+            if opciones.solo_comprobar:
+                _imprimir_comprobacion(comprobar(conexion))
+                return 0
+            resumen = trasladar(conexion, dsn_lectura=opciones.dsn)
+            comprobaciones = comprobar(conexion)
+            _imprimir_comprobacion(comprobaciones)
+            if opciones.intercambiar:
+                intercambiar(conexion)
+    except TrasladoNoCuadra as error:
+        print(f"NO SE INTERCAMBIÓ: {error}", file=sys.stderr)
+        print("La tabla `crudo_registro` sigue intacta.", file=sys.stderr)
+        return CODIGO_FALLO
+    except psycopg.Error as error:
+        print(f"el traslado se detuvo: {error}", file=sys.stderr)
+        return CODIGO_FALLO
+    except ErrorAlmacen as error:
+        print(f"el traslado se detuvo: {error}", file=sys.stderr)
+        return CODIGO_FALLO
+
+    print()
+    print(f"Leídas     {resumen.leidas}")
+    print(f"Escritas   {resumen.escritas}")
+    print(f"Colapsadas {resumen.colapsadas}   (eran la misma fila bajo la llave nueva)")
+    if resumen.sin_identidad:
+        print(f"           {resumen.sin_identidad} sin identidad de negocio, trasladadas como estaban")
+    if resumen.datasets_desconocidos:
+        print(f"           {resumen.datasets_desconocidos} de datasets que el código ya no conoce")
+    if resumen.leidas:
+        print()
+        print(f"Reducción: {100 * resumen.colapsadas / resumen.leidas:.1f} % de las filas eran duplicado puro.")
+    print()
+    if opciones.intercambiar:
+        print(f"Hecho. La tabla anterior quedó como `{TABLA_RESPALDO}` y no se ha borrado.")
+        print(f"Para volver atrás: renombra `{TABLA_RESPALDO}` a `{TABLA_ORIGEN}`.")
+    else:
+        print("Nada se ha intercambiado todavía: `crudo_registro` sigue siendo la de antes.")
+        print("Revisa los números y, si cuadran, vuelve a correr esto con --intercambiar.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

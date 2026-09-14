@@ -1,0 +1,126 @@
+"""Normaliza la capa cruda y cruza Contratos con Procesos.
+
+    python -m vigia.normalizado
+
+Lee lo ya ingerido, no la fuente: no sale a la red. Se puede correr las veces
+que se quiera y el resultado es el mismo, porque cada fila se reescribe entera
+desde el crudo que la originó.
+"""
+
+from __future__ import annotations
+
+import argparse
+import logging
+import os
+import sys
+
+from vigia.crudo.repositorio import ErrorAlmacen
+from vigia.normalizado.cruce import (
+    cruzar_contratos,
+    deduplicar_procesos,
+    indexar_por_portafolio,
+    resumir,
+)
+from vigia.normalizado.postgres import repositorio_normalizado_postgres
+from vigia.tiempo import ahora_utc
+
+CODIGO_USO = 2
+CODIGO_FALLO = 1
+
+registro_log = logging.getLogger("vigia.normalizado")
+
+
+def main(argv: list[str] | None = None) -> int:
+    analizador = argparse.ArgumentParser(
+        prog="vigia.normalizado",
+        description="Normaliza la capa cruda y cruza Contratos con Procesos.",
+    )
+    analizador.add_argument(
+        "--dsn",
+        default=os.environ.get("VIGIA_DSN"),
+        help="Cadena de conexión. Por defecto, VIGIA_DSN del entorno.",
+    )
+    opciones = analizador.parse_args(argv)
+
+    if not opciones.dsn:
+        print(
+            "falta la cadena de conexión: pásala con --dsn o en VIGIA_DSN",
+            file=sys.stderr,
+        )
+        return CODIGO_USO
+
+    logging.basicConfig(
+        level=os.environ.get("VIGIA_LOG", "INFO"),
+        format="%(asctime)s %(levelname)s %(message)s",
+    )
+
+    momento = ahora_utc()
+    try:
+        with repositorio_normalizado_postgres(opciones.dsn) as repositorio:
+            # Procesos primero: sin el índice de portafolios no hay contra qué
+            # cruzar, y todo contrato con llave saldría huérfano.
+            procesos, procesos_leidos, procesos_sin_id = deduplicar_procesos(
+                repositorio.ultimos_registros("procesos"), momento=momento
+            )
+            repositorio.guardar_procesos(procesos.values())
+            indice = indexar_por_portafolio(procesos.values())
+
+            contratos, contratos_leidos, contratos_sin_id = cruzar_contratos(
+                repositorio.ultimos_registros("contratos"),
+                indice_portafolio=indice,
+                momento=momento,
+            )
+            repositorio.guardar_contratos(contratos)
+    except ErrorAlmacen as error:
+        print(f"la normalización se detuvo: {error}", file=sys.stderr)
+        return CODIGO_FALLO
+
+    resumen = resumir(
+        contratos,
+        procesos_leidos=procesos_leidos,
+        procesos_normalizados=len(procesos),
+        contratos_leidos=contratos_leidos,
+        contratos_sin_identidad=contratos_sin_id,
+    )
+
+    print()
+    print(f"Procesos   leídos {resumen.procesos_leidos}  ->  {resumen.procesos_normalizados} tras deduplicar")
+    if resumen.procesos_colapsados:
+        print(
+            f"           {resumen.procesos_colapsados} filas colapsadas "
+            "(el dataset trae una fila por adjudicación, no por Proceso)"
+        )
+    if procesos_sin_id:
+        print(f"           {procesos_sin_id} descartados por no traer id_del_proceso")
+
+    print(f"Contratos  {resumen.contratos_normalizados} normalizados")
+    print(f"           {resumen.enlazados} enlazados a su Proceso")
+    print(f"           {resumen.huerfanos} huérfanos (traen llave, no encontraron Proceso)")
+    print(f"           {resumen.sin_llave_de_cruce} sin llave de cruce poblada")
+    if contratos_sin_id:
+        print(f"           {contratos_sin_id} descartados por no traer id_contrato")
+
+    print()
+    if resumen.proporcion_huerfanos is None:
+        print(
+            "Porcentaje de huérfanos: no medible — ningún contrato traía llave "
+            "de cruce. No es cero: es que no hay de qué hablar."
+        )
+    else:
+        print(
+            f"Porcentaje de huérfanos: {resumen.proporcion_huerfanos:.1%} "
+            "(sobre los contratos que sí traen llave)"
+        )
+        if resumen.proporcion_huerfanos > 0.5 and resumen.procesos_normalizados == 0:
+            print()
+            print(
+                "Casi todo salió huérfano y no hay ni un Proceso ingerido. "
+                "Eso no es un problema del cruce: falta ingerir el dataset "
+                "`procesos`, con `python -m vigia --dataset procesos`."
+            )
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

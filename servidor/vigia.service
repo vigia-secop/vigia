@@ -1,0 +1,32 @@
+[Unit]
+# El ciclo diario de Vigía. Lo dispara vigia.timer, no se arranca al inicio.
+Description=Ciclo diario de Vigia (SECOP)
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=oneshot
+User=vigia
+Group=vigia
+WorkingDirectory=/opt/vigia
+ExecStart=/opt/vigia/servidor/vigia-dia.sh
+
+# Tres horas de techo. Un ciclo normal son cuatro o cinco minutos; si pasa de
+# tres horas es que algo se colgó, y es mejor que muera a que se solape con el
+# del día siguiente.
+TimeoutStartSec=3h
+
+# El proceso no necesita nada fuera de su carpeta ni ningún privilegio. Si
+# algún día una dependencia hace algo raro, que se encuentre con esto.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/vigia
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

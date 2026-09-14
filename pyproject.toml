@@ -1,0 +1,35 @@
+[project]
+name = "vigia-secop"
+version = "0.1.0"
+description = "Vigía SECOP — vigilancia de contratación pública colombiana"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.27",
+    "psycopg[binary]>=3.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+vigia = "vigia.__main__:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["vigia*"]
+
+[tool.setuptools.package-data]
+# Los esquemas esperados son dato del producto, no artefactos de desarrollo:
+# viajan con el paquete instalado.
+vigia = ["schema/esperado/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "postgres: requiere una base PostgreSQL real; se omite si no hay VIGIA_DSN",
+]

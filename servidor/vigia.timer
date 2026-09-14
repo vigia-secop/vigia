@@ -1,0 +1,18 @@
+[Unit]
+Description=Dispara el ciclo diario de Vigia
+
+[Timer]
+# 05:40, hora de Bogotá (el instalador pone la zona horaria del servidor).
+# SECOP publica de madrugada; a esta hora el día anterior ya está completo.
+OnCalendar=*-*-* 05:40:00
+
+# Si el servidor estuvo apagado a esa hora, se corre en cuanto vuelva. Un
+# disparador que pasa no vuelve, y ese fue justo el problema que tuvimos con
+# las tareas programadas de Windows.
+Persistent=true
+
+# Hasta diez minutos de desfase, para no salir todos los días al mismo segundo.
+RandomizedDelaySec=600
+
+[Install]
+WantedBy=timers.target

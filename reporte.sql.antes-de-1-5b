@@ -1,0 +1,159 @@
+-- Un único objeto JSON con todo lo que el reporte necesita.
+--
+-- SOLO LECTURA. No modifica nada. Se ejecuta con:
+--     psql -tA -f reporte.sql -o reporte.json
+--
+-- Cada bloque responde una pregunta concreta, y las que no se pueden
+-- responder con los datos de hoy no están: un reporte que rellena huecos
+-- con ceros miente peor que uno con huecos.
+
+SELECT json_build_object(
+
+  'generado_en', now(),
+
+  'totales', (
+    SELECT json_build_object(
+      'contratos',        count(*),
+      'enlazados',        count(id_del_proceso),
+      'huerfanos',        count(*) FILTER (WHERE id_del_proceso IS NULL AND proceso_de_compra IS NOT NULL),
+      'sin_llave',        count(*) FILTER (WHERE proceso_de_compra IS NULL),
+      'valor_total',      coalesce(sum(valor), 0),
+      'valor_mediano',    coalesce(percentile_cont(0.5) WITHIN GROUP (ORDER BY valor), 0),
+      'entidades',        count(DISTINCT nit_entidad),
+      'sin_valor',        count(*) FILTER (WHERE valor IS NULL),
+      'primera_firma',    min(fecha_de_firma),
+      'ultima_firma',     max(fecha_de_firma)
+    ) FROM contrato
+  ),
+
+  'procesos', (
+    SELECT json_build_object(
+      'total',       count(*),
+      'con_portafolio', count(id_del_portafolio),
+      'adjudicados', count(*) FILTER (WHERE adjudicado)
+    ) FROM proceso
+  ),
+
+  -- Un portafolio que apunta a más de un Proceso: la ambigüedad que la
+  -- historia 1.4 dejó deliberadamente sin declarar única, por no estar medida.
+  -- Ahora sí lo está.
+  'portafolios_ambiguos', (
+    SELECT count(*) FROM (
+      SELECT id_del_portafolio FROM proceso
+      WHERE id_del_portafolio IS NOT NULL
+      GROUP BY 1 HAVING count(*) > 1
+    ) t
+  ),
+
+  'crudo', (
+    SELECT json_agg(f) FROM (
+      SELECT dataset,
+             count(*) AS filas,
+             count(DISTINCT id_fila_fuente) AS ids_distintos
+      FROM crudo_registro GROUP BY dataset ORDER BY dataset
+    ) f
+  ),
+
+  'top_entidades', (
+    SELECT json_agg(f) FROM (
+      SELECT nombre_entidad AS entidad,
+             nit_entidad AS nit,
+             count(*) AS contratos,
+             coalesce(sum(valor), 0) AS valor
+      FROM contrato
+      WHERE nombre_entidad IS NOT NULL
+      GROUP BY 1, 2
+      ORDER BY valor DESC
+      LIMIT 15
+    ) f
+  ),
+
+  'top_contratos', (
+    SELECT json_agg(f) FROM (
+      SELECT id_contrato, referencia, nombre_entidad AS entidad,
+             valor, fecha_de_firma, estado,
+             (id_del_proceso IS NOT NULL) AS enlazado
+      FROM contrato
+      WHERE valor IS NOT NULL
+      ORDER BY valor DESC
+      LIMIT 10
+    ) f
+  ),
+
+  'por_dia', (
+    SELECT json_agg(f) FROM (
+      SELECT fecha_de_firma AS dia,
+             count(*) AS contratos,
+             coalesce(sum(valor), 0) AS valor
+      FROM contrato
+      WHERE fecha_de_firma IS NOT NULL
+      GROUP BY 1 ORDER BY 1
+    ) f
+  ),
+
+  -- Tramos de valor. Los cortes son de orden de magnitud a propósito: la
+  -- contratación pública colombiana va de un millón a cientos de miles de
+  -- millones, y una escala lineal la aplasta toda contra el eje.
+  'tramos_de_valor', (
+    SELECT json_agg(f) FROM (
+      SELECT tramo, orden, count(*) AS contratos, coalesce(sum(valor), 0) AS valor
+      FROM (
+        SELECT valor,
+          CASE
+            WHEN valor IS NULL          THEN 'sin valor'
+            WHEN valor <  1000000       THEN 'menos de 1 M'
+            WHEN valor <  10000000      THEN '1 M - 10 M'
+            WHEN valor <  100000000     THEN '10 M - 100 M'
+            WHEN valor <  1000000000    THEN '100 M - 1000 M'
+            WHEN valor < 10000000000    THEN '1000 M - 10 mil M'
+            ELSE                             'mas de 10 mil M'
+          END AS tramo,
+          CASE
+            WHEN valor IS NULL          THEN 0
+            WHEN valor <  1000000       THEN 1
+            WHEN valor <  10000000      THEN 2
+            WHEN valor <  100000000     THEN 3
+            WHEN valor <  1000000000    THEN 4
+            WHEN valor < 10000000000    THEN 5
+            ELSE                             6
+          END AS orden
+        FROM contrato
+      ) t
+      GROUP BY tramo, orden ORDER BY orden
+    ) f
+  ),
+
+  'estados', (
+    SELECT json_agg(f) FROM (
+      SELECT coalesce(estado, '(sin estado)') AS estado, count(*) AS contratos
+      FROM contrato GROUP BY 1 ORDER BY contratos DESC LIMIT 10
+    ) f
+  ),
+
+  'modalidades', (
+    SELECT json_agg(f) FROM (
+      SELECT coalesce(p.modalidad, '(sin modalidad)') AS modalidad,
+             count(*) AS contratos,
+             coalesce(sum(c.valor), 0) AS valor
+      FROM contrato c JOIN proceso p USING (id_del_proceso)
+      GROUP BY 1 ORDER BY contratos DESC LIMIT 12
+    ) f
+  ),
+
+  -- Concentración: cuántos contratos tiene la entidad que más tiene, y qué
+  -- parte del valor total se lleva el 1 % de contratos más grandes. No es una
+  -- Regla ni una alerta: es la forma de la base, que es lo que hay hoy.
+  'concentracion', (
+    SELECT json_build_object(
+      'valor_del_1pct_mayor',
+        (SELECT coalesce(sum(valor), 0) FROM (
+            SELECT valor FROM contrato WHERE valor IS NOT NULL
+            ORDER BY valor DESC
+            LIMIT greatest(1, (SELECT count(*) FROM contrato WHERE valor IS NOT NULL) / 100)
+        ) t),
+      'valor_total',
+        (SELECT coalesce(sum(valor), 0) FROM contrato WHERE valor IS NOT NULL)
+    )
+  )
+
+) AS reporte;

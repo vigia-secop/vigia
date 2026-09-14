@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+<rect width="1200" height="630" fill="#0E1719"/>
+<g transform="translate(435 108) scale(2.0)"><path d="M 2.00 52.00 Q 82.50 -48.00 163.00 52.00 Q 82.50 152.00 2.00 52.00 Z" fill="none" stroke="#E8EDED" stroke-width="3.0"/><path d="M 38.71 31.50 L 82.50 81.50 L 82.50 72.00 L 45.79 31.50 Z" fill="#E8EDED"/><path d="M 126.29 31.50 L 82.50 81.50 L 82.50 72.00 L 119.21 31.50 Z" fill="#E8EDED"/></g>
+<text x="600" y="424" text-anchor="middle" fill="#E8EDED"
+      font-family="Archivo, Segoe UI, system-ui, sans-serif" font-size="80"
+      font-weight="700" letter-spacing="6">VIGÍA</text>
+<text x="600" y="488" text-anchor="middle" fill="#AEBDBF"
+      font-family="Georgia, serif" font-size="33">Cuánto contrata el Estado colombiano,</text>
+<text x="600" y="532" text-anchor="middle" fill="#AEBDBF"
+      font-family="Georgia, serif" font-size="33">y qué parte no se puede ver.</text>
+<text x="600" y="584" text-anchor="middle" fill="#6B7B7E"
+      font-family="Archivo, Segoe UI, system-ui, sans-serif" font-size="21"
+      letter-spacing="1.5">DATOS DE SECOP · INDICADORES ESTADÍSTICOS</text>
+<rect x="0" y="618" width="1200" height="12" fill="#0091A8"/>
+</svg>

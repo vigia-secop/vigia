@@ -1,0 +1,20 @@
+# Erratas x10^n ya revisadas por una persona.
+#
+# QUE ES ESTE ARCHIVO. La puerta 3 del semaforo detiene la publicacion cuando
+# aparece un contrato cuyo valor es exactamente mil o diez mil veces el
+# presupuesto de su propio proceso — la firma de una tecla de mas, no la de un
+# sobrecosto. Mientras el identificador NO este en esta lista, no se publica.
+#
+# No hay umbral. No se pregunta «¿las erratas mueven mas del X % del valor?»,
+# porque ese X habria que sacarselo de la manga y asi murieron tres banderas de
+# este proyecto. Se pregunta: ¿alguien la miro?
+#
+# COMO SE REVISA UNA. Se abre el contrato en SECOP con el enlace que trae
+# revision.html, se compara el valor con el presupuesto del proceso, y se anota
+# aqui lo que se vio. Treinta segundos.
+#
+# FORMATO: un identificador por linea; lo que siga es libre. Las lineas que
+# empiezan por # son comentarios.
+#
+# ESTE ARCHIVO SI SE VERSIONA. Es el rastro de que una persona miro antes de
+# publicar, y ese rastro es la respuesta el dia que alguien reclame.

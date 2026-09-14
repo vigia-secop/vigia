@@ -1,0 +1,223 @@
+"""Capa normalizada sobre PostgreSQL: lectura del crudo y escritura tipada."""
+
+from __future__ import annotations
+
+from contextlib import contextmanager
+from typing import Iterable, Iterator
+
+import psycopg
+
+from datetime import datetime
+
+from vigia.crudo.modelo import RegistroCrudo
+from vigia.crudo.repositorio import ErrorAlmacen
+from vigia.normalizado.modelo import ContratoNormalizado, ProcesoNormalizado
+from vigia.tiempo import ahora_utc
+
+#: La versión más reciente de cada fila.
+#:
+#: La capa cruda es de solo inserción y guarda TODAS las versiones de un
+#: registro. Normalizar sin esta cláusula mezclaría el pasado con el presente:
+#: un contrato que cambió de valor aparecería dos veces, y cuál gana dependería
+#: del orden de lectura. `DISTINCT ON` con el orden por `consultado_en` deja
+#: exactamente una fila por identidad, la última que llegó.
+_ULTIMOS = """
+SELECT DISTINCT ON (id_fila_fuente)
+       id_fila_fuente, hash_contenido, contenido, consultado_en
+FROM crudo_registro
+WHERE dataset = %s
+ORDER BY id_fila_fuente, consultado_en DESC, hash_contenido
+"""
+
+_GUARDAR_PROCESO = """
+INSERT INTO proceso (
+    id_del_proceso, id_del_portafolio, referencia, nit_entidad, nombre_entidad,
+    fecha_de_publicacion, modalidad, estado, adjudicado,
+    id_fila_fuente, hash_contenido, normalizado_en
+) VALUES (
+    %(id_del_proceso)s, %(id_del_portafolio)s, %(referencia)s, %(nit_entidad)s,
+    %(nombre_entidad)s, %(fecha_de_publicacion)s, %(modalidad)s, %(estado)s,
+    %(adjudicado)s, %(id_fila_fuente)s, %(hash_contenido)s, %(normalizado_en)s
+)
+ON CONFLICT (id_del_proceso) DO UPDATE SET
+    id_del_portafolio    = EXCLUDED.id_del_portafolio,
+    referencia           = EXCLUDED.referencia,
+    nit_entidad          = EXCLUDED.nit_entidad,
+    nombre_entidad       = EXCLUDED.nombre_entidad,
+    fecha_de_publicacion = EXCLUDED.fecha_de_publicacion,
+    modalidad            = EXCLUDED.modalidad,
+    estado               = EXCLUDED.estado,
+    adjudicado           = EXCLUDED.adjudicado,
+    id_fila_fuente       = EXCLUDED.id_fila_fuente,
+    hash_contenido       = EXCLUDED.hash_contenido,
+    normalizado_en       = EXCLUDED.normalizado_en
+"""
+
+_GUARDAR_CONTRATO = """
+INSERT INTO contrato (
+    id_contrato, proceso_de_compra, id_del_proceso, referencia, nit_entidad,
+    nombre_entidad, valor, fecha_de_firma, estado,
+    proveedor_tipo, proveedor_numero, proveedor_nombre,
+    id_fila_fuente, hash_contenido, normalizado_en
+) VALUES (
+    %(id_contrato)s, %(proceso_de_compra)s, %(id_del_proceso)s, %(referencia)s,
+    %(nit_entidad)s, %(nombre_entidad)s, %(valor)s, %(fecha_de_firma)s,
+    %(estado)s, %(proveedor_tipo)s, %(proveedor_numero)s, %(proveedor_nombre)s,
+    %(id_fila_fuente)s, %(hash_contenido)s, %(normalizado_en)s
+)
+ON CONFLICT (id_contrato) DO UPDATE SET
+    proceso_de_compra = EXCLUDED.proceso_de_compra,
+    id_del_proceso    = EXCLUDED.id_del_proceso,
+    referencia        = EXCLUDED.referencia,
+    nit_entidad       = EXCLUDED.nit_entidad,
+    nombre_entidad    = EXCLUDED.nombre_entidad,
+    valor             = EXCLUDED.valor,
+    fecha_de_firma    = EXCLUDED.fecha_de_firma,
+    estado            = EXCLUDED.estado,
+    proveedor_tipo    = EXCLUDED.proveedor_tipo,
+    proveedor_numero  = EXCLUDED.proveedor_numero,
+    proveedor_nombre  = EXCLUDED.proveedor_nombre,
+    id_fila_fuente    = EXCLUDED.id_fila_fuente,
+    hash_contenido    = EXCLUDED.hash_contenido,
+    normalizado_en    = EXCLUDED.normalizado_en
+"""
+
+_GUARDAR_PROVEEDOR = """
+INSERT INTO proveedor (
+    tipo_documento, numero, nombre_principal, contratos, variantes, normalizado_en
+) VALUES (%(tipo)s, %(numero)s, %(nombre)s, %(contratos)s, %(variantes)s, %(momento)s)
+ON CONFLICT (tipo_documento, numero) DO UPDATE SET
+    nombre_principal = EXCLUDED.nombre_principal,
+    contratos        = EXCLUDED.contratos,
+    variantes        = EXCLUDED.variantes,
+    normalizado_en   = EXCLUDED.normalizado_en
+"""
+
+_GUARDAR_VARIANTE = """
+INSERT INTO proveedor_variante (
+    tipo_documento, numero, nombre, contratos, normalizado_en
+) VALUES (%(tipo)s, %(numero)s, %(nombre)s, %(contratos)s, %(momento)s)
+ON CONFLICT (tipo_documento, numero, nombre) DO UPDATE SET
+    contratos      = EXCLUDED.contratos,
+    normalizado_en = EXCLUDED.normalizado_en
+"""
+
+#: Tamaño de lote. La normalización nacional son ~92 000 contratos: mandarlos
+#: en una sola sentencia agota memoria en el cliente y en el servidor.
+LOTE = 1000
+
+
+class RepositorioNormalizadoPostgres:
+    """Lee la capa cruda y escribe la normalizada.
+
+    A diferencia de la capa cruda, esta tabla **sí se actualiza**: es una
+    lectura derivada, no un registro histórico. Rehacerla desde el mismo crudo
+    tiene que dar exactamente el mismo resultado, y por eso cada fila se
+    reescribe entera con `ON CONFLICT DO UPDATE` en vez de fusionarse a medias.
+    """
+
+    def __init__(
+        self, conexion: psycopg.Connection, *, momento: datetime | None = None
+    ) -> None:
+        self._conexion = conexion
+        self._momento = momento or ahora_utc()
+
+    def ultimos_registros(self, dataset: str) -> Iterator[RegistroCrudo]:
+        try:
+            # Cursor con nombre: el resultado no cabe cómodo en memoria y el
+            # servidor lo va entregando por partes.
+            with self._conexion.transaction(), self._conexion.cursor(
+                name=f"crudo_{dataset}"
+            ) as cursor:
+                cursor.itersize = LOTE
+                cursor.execute(_ULTIMOS, (dataset,))
+                for id_fila, hash_guardado, contenido, consultado_en in cursor:
+                    yield RegistroCrudo(
+                        dataset=dataset,
+                        id_fila_fuente=id_fila,
+                        hash_contenido=hash_guardado,
+                        contenido=contenido,
+                        consultado_en=consultado_en,
+                    )
+        except psycopg.Error as error:
+            raise ErrorAlmacen(
+                f"no se pudo leer la capa cruda de {dataset!r}: {error}"
+            ) from error
+
+    def guardar_procesos(self, procesos: Iterable[ProcesoNormalizado]) -> int:
+        return self._guardar(_GUARDAR_PROCESO, (vars(p) for p in procesos), "procesos")
+
+    def guardar_proveedores(self, proveedores: Iterable) -> int:
+        """Guarda las identidades y TODAS sus variantes de nombre.
+
+        Los proveedores van antes que las variantes porque la llave foránea lo
+        exige, y ambos antes que los contratos por la misma razón.
+        """
+        materializados = list(proveedores)
+        guardados = self._guardar(
+            _GUARDAR_PROVEEDOR,
+            (
+                {
+                    "tipo": p.identidad.tipo,
+                    "numero": p.identidad.numero,
+                    "nombre": p.nombre_principal,
+                    "contratos": p.contratos,
+                    "variantes": p.cuantas_variantes,
+                    "momento": momento,
+                }
+                for p in materializados
+                for momento in (self._momento,)
+            ),
+            "proveedores",
+        )
+        self._guardar(
+            _GUARDAR_VARIANTE,
+            (
+                {
+                    "tipo": p.identidad.tipo,
+                    "numero": p.identidad.numero,
+                    "nombre": nombre,
+                    "contratos": cuantos,
+                    "momento": self._momento,
+                }
+                for p in materializados
+                for nombre, cuantos in sorted(p.variantes.items())
+            ),
+            "variantes de proveedor",
+        )
+        return guardados
+
+    def guardar_contratos(self, contratos: Iterable[ContratoNormalizado]) -> int:
+        return self._guardar(
+            _GUARDAR_CONTRATO, (vars(c) for c in contratos), "contratos"
+        )
+
+    def _guardar(self, sentencia: str, filas: Iterable[dict], que: str) -> int:
+        guardados = 0
+        lote: list[dict] = []
+        try:
+            with self._conexion.transaction(), self._conexion.cursor() as cursor:
+                for fila in filas:
+                    lote.append(fila)
+                    if len(lote) >= LOTE:
+                        cursor.executemany(sentencia, lote)
+                        guardados += len(lote)
+                        lote.clear()
+                if lote:
+                    cursor.executemany(sentencia, lote)
+                    guardados += len(lote)
+        except psycopg.Error as error:
+            raise ErrorAlmacen(f"no se pudieron guardar los {que}: {error}") from error
+        return guardados
+
+
+@contextmanager
+def repositorio_normalizado_postgres(
+    dsn: str, *, momento: datetime | None = None
+) -> Iterator[RepositorioNormalizadoPostgres]:
+    try:
+        conexion = psycopg.connect(dsn)
+    except psycopg.Error as error:
+        raise ErrorAlmacen(f"no se pudo conectar a la base de datos: {error}") from error
+    with conexion:
+        yield RepositorioNormalizadoPostgres(conexion, momento=momento)

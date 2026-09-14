@@ -1,0 +1,112 @@
+# generated: 09-02-2026 11:57
+# project: vigia-secop
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created, ready for development
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# Action Item Status:
+#   - open: Committed during a retrospective, not yet addressed
+#   - in-progress: Actively being worked on
+#   - done: Completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when its first story starts (via build's sprint sync)
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates the next story after the previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Retrospective appends its action items to action_items; the status view surfaces open ones
+
+# NOTAS DE SECUENCIA DE ESTE PROYECTO:
+# - La épica 5 tiene una dependencia externa bloqueante: el concepto jurídico.
+#   Se puede construir en paralelo, pero no se publica nada hasta tenerlo.
+# - Las historias 4.1 a 4.8 son independientes entre sí y pueden hacerse en
+#   cualquier orden, o en paralelo.
+# - El resto va en orden numérico: la épica 1 completa antes de la 2, y así.
+
+# Timestamps use MM-DD-YYYY HH:MM.
+
+generated: 09-02-2026 11:57
+last_updated: 09-04-2026 23:30
+project: vigia-secop
+project_key: NOKEY
+tracking_system: file-system
+story_location: "_bmad-output/implementation-artifacts"
+
+development_status:
+  epic-1: in-progress
+  1-1-ingesta-cruda: review
+  1-2-marca-de-agua: review
+  1-3-validacion-de-esquema: review
+  1-4-esquema-unificado: done
+  1-5-identidad-de-proveedor: review
+  1-5b-uniones-temporales: review
+  1-6-mapeo-divipola: backlog
+  1-7-barrido-completo: backlog
+  # Nace de corregir una afirmación falsa de la 1.5b: los integrantes de una
+  # unión temporal no están en `jbjy-vk9h`. Hoy no es un agujero (los contratos
+  # ya se cuentan y se listan), es una mejora.
+  1-8-integrantes-de-uniones-temporales: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-reglas-versionadas: backlog
+  2-2-identidad-de-alerta: backlog
+  2-3-expediente-completo: backlog
+  2-4-bandera-oferente-unico: backlog
+  2-5-modo-calibracion: backlog
+  2-6-vocabulario-prohibido: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-cola-de-alertas: backlog
+  3-2-marcar-alertas: backlog
+  3-3-tasa-de-confirmacion: backlog
+  3-4-reglas-bajo-el-piso: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-representante-legal-compartido: backlog
+  4-2-adjudicacion-pegada-al-presupuesto: backlog
+  4-3-concentracion-por-proveedor: backlog
+  4-4-concentracion-por-ordenador: backlog
+  4-5-plazo-expres: backlog
+  4-6-posible-fraccionamiento: backlog
+  4-7-desviacion-y-prorroga: backlog
+  4-8-ejecucion-anomala: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-reporte-agregado: backlog
+  5-2-filtro-persona-natural: backlog
+  5-3-compuerta-de-aprobacion: backlog
+  5-4-sustento-visible: backlog
+  5-5-registro-y-rectificacion: backlog
+  epic-5-retrospective: optional
+
+  epic-6: backlog
+  6-1-ciclo-diario-programado: backlog
+  6-2-reporte-de-ciclo: backlog
+  6-3-reproceso-desde-crudo: backlog
+  epic-6-retrospective: optional
+
+# Action items committed during retrospectives (section created by the retrospective workflow)
+action_items: []

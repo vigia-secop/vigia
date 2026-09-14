@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vigía SECOP · 31 de agosto al 6 de septiembre de 2026</title>
+<meta name="description" content="Cuánto contrata el Estado colombiano, y qué parte no se puede ver.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+:root {
+  --papel:#EEF1F1; --superficie:#FFFFFF; --borde:#D3DADB; --borde-sutil:#E4E9E9;
+  --tinta:#0E1719; --tinta-2:#3A4A4D; --tinta-3:#6B7B7E;
+  --acento:#0091A8; --acento-flojo:#DCEFF3;
+  --sube:#1D6B4F; --baja:#A8451B; --aviso:#A8620F; --aviso-flojo:#F6E9D8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --papel:#10171A; --superficie:#171F22; --borde:#2B383C; --borde-sutil:#212B2E;
+    --tinta:#E8EDED; --tinta-2:#AEBDBF; --tinta-3:#7C8C8F;
+    --acento:#22A0B8; --acento-flojo:#12313A;
+    --sube:#4FB489; --baja:#D98055; --aviso:#D9903F; --aviso-flojo:#31261A;
+  }
+}
+:root[data-theme="dark"] {
+  --papel:#10171A; --superficie:#171F22; --borde:#2B383C; --borde-sutil:#212B2E;
+  --tinta:#E8EDED; --tinta-2:#AEBDBF; --tinta-3:#7C8C8F;
+  --acento:#22A0B8; --acento-flojo:#12313A;
+  --sube:#4FB489; --baja:#D98055; --aviso:#D9903F; --aviso-flojo:#31261A;
+}
+*,*::before,*::after { box-sizing:border-box; }
+body { margin:0; background:var(--papel); color:var(--tinta);
+  font-family:Archivo,"Segoe UI",system-ui,sans-serif; font-size:16px; line-height:1.6; }
+.env { max-width:800px; margin:0 auto; padding:40px 20px 80px; }
+header.top { border-bottom:2px solid var(--tinta); padding-bottom:20px; }
+h1 { margin:0; font-size:30px; letter-spacing:-.02em; }
+.lema { margin:6px 0 0; color:var(--tinta-2); font-family:"Source Serif 4",Georgia,serif;
+  font-size:18px; }
+.per { margin-top:14px; font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:13px; color:var(--tinta-3); }
+h2 { font-size:20px; margin:44px 0 4px; letter-spacing:-.01em; }
+h2 + .sub { margin:0 0 16px; color:var(--tinta-3); font-size:14.5px; }
+.cifras { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  margin-top:26px; }
+.caja { background:var(--superficie); border:1px solid var(--borde); border-radius:8px;
+  padding:16px 18px; }
+.rot { font-size:12px; text-transform:uppercase; letter-spacing:.07em; color:var(--tinta-3); }
+.dat { font-size:27px; font-weight:600; letter-spacing:-.02em; margin-top:4px; }
+.var { font-size:13px; font-weight:600; margin-top:2px; }
+.sube { color:var(--sube); } .baja { color:var(--baja); } .neutro { color:var(--tinta-3); }
+.pie { font-size:12.5px; color:var(--tinta-3); margin-top:6px; }
+.tarjeta { background:var(--superficie); border:1px solid var(--borde);
+  border-radius:8px; padding:18px 20px; }
+.alcance { border-left:3px solid var(--aviso); background:var(--aviso-flojo); }
+.alcance li { margin:8px 0; }
+.alcance ul { margin:10px 0 0; padding-left:20px; }
+.barras { list-style:none; margin:0; padding:0; }
+.barras li { display:grid; grid-template-columns:1fr 2fr auto; gap:12px;
+  align-items:center; padding:7px 0; border-bottom:1px solid var(--borde-sutil); }
+.barras li:last-child { border-bottom:0; }
+.et { font-size:14px; }
+.ci { font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:13px;
+  text-align:right; white-space:nowrap; }
+.bar { display:block; height:7px; background:var(--borde-sutil); border-radius:4px;
+  overflow:hidden; }
+.bar > span { display:block; height:100%; background:var(--acento); }
+.nota { margin-top:44px; padding:18px 20px; border:1px solid var(--borde);
+  border-radius:8px; background:var(--superficie); font-size:14.5px; color:var(--tinta-2); }
+.nota strong { color:var(--tinta); }
+.archivo { list-style:none; padding:0; margin:10px 0 0; }
+.archivo li { padding:6px 0; border-bottom:1px solid var(--borde-sutil); }
+a { color:var(--acento); }
+footer { margin-top:52px; padding-top:18px; border-top:1px solid var(--borde);
+  font-size:13px; color:var(--tinta-3); }
+.vacio { color:var(--tinta-3); font-size:14px; margin:0; }
+@media (max-width:520px) {
+  .barras li { grid-template-columns:1fr auto; }
+  .bar { display:none; }
+}
+</style>
+</head>
+<body>
+<div class="env">
+
+  <header class="top">
+    <h1>Vigía SECOP</h1>
+    <p class="lema">Cuánto contrata el Estado colombiano, y qué parte no se puede ver.</p>
+    <p class="per">31 de agosto al 6 de septiembre de 2026
+      · 5 días hábiles · datos al 2026-09-10</p>
+  </header>
+
+  <div class="cifras">
+    <div class="caja"><div class="rot">Contratos firmados</div>
+      <div class="dat">23.261</div>
+      <div class="var neutro">+4,7 % por día hábil</div>
+      <div class="pie">4.652 al día</div></div>
+    <div class="caja"><div class="rot">Valor</div>
+      <div class="dat">$1,87 billones</div>
+      <div class="var baja">-13,1 % por día hábil</div>
+      <div class="pie">$374,0 mil millones al día</div></div>
+    <div class="caja"><div class="rot">Entidades</div>
+      <div class="dat">1.448</div>
+      <div class="pie">contrataron en el período</div></div>
+    <div class="caja"><div class="rot">Contratistas</div>
+      <div class="dat">22.522</div>
+      <div class="pie">identidades distintas</div></div>
+  </div>
+
+  <h2>Todo se compara por día hábil</h2>
+  <p class="sub">Y no por cortesía estadística.</p>
+  <div class="tarjeta">
+    <p style="margin:0">Este período tuvo <strong>5 días hábiles</strong>;
+    el anterior, <strong>5</strong>. Comparar dos semanas con conteos
+    crudos es comparar almanaques: el 3 de septiembre de 2026 los conteos sin
+    normalizar decían que la contratación había caído un 45,7 % tras el cambio
+    de gobierno. Eran dos festivos. La diferencia real era del 1,0 %.</p>
+  </div>
+
+  <h2>Lo que estas cifras no alcanzan a ver</h2>
+  <p class="sub">Va antes que cualquier ranking, a propósito.</p>
+  <div class="tarjeta alcance">
+    <p style="margin:0">Una cifra de contratación pública sin saber sobre qué
+    parte del universo se calculó es la clase de número que se lee mal. Estas
+    son las partes que quedan fuera del alcance de cada medición:</p>
+    <ul>
+      <li><strong>100 contratos</strong> de uniones temporales
+        y consorcios sin documento de identificación
+        ($412,7 mil millones, <strong>22,1 % del valor</strong>).
+        Cada uno es su propia identidad: no se les puede medir concentración
+        hasta conocer a sus integrantes, y la fuente no los publica.</li>
+      <li><strong>591 contratos</strong>
+        (2,5 %) traen llave de cruce y no encontraron
+        su proceso: sin proceso no hay modalidad ni plazo que medir.</li>
+      <li><strong>222 contratos</strong>
+        (1,0 %) sin departamento declarado.</li>
+      <li><strong>0 contratos</strong> sin valor.</li>
+    </ul>
+  </div>
+
+  <h2>Dónde se firmó</h2>
+  <p class="sub">Por valor adjudicado.</p>
+  <div class="tarjeta"><ul class="barras"><li><span class="et">Antioquia</span><span class="bar"><span style="width:100.0%"></span></span><span class="ci">$503,0 mil millones</span></li><li><span class="et">Bogota, D.C.</span><span class="bar"><span style="width:77.8%"></span></span><span class="ci">$391,6 mil millones</span></li><li><span class="et">Casanare</span><span class="bar"><span style="width:27.6%"></span></span><span class="ci">$138,6 mil millones</span></li><li><span class="et">Valle del Cauca</span><span class="bar"><span style="width:23.1%"></span></span><span class="ci">$116,1 mil millones</span></li><li><span class="et">Bolivar</span><span class="bar"><span style="width:12.9%"></span></span><span class="ci">$64,7 mil millones</span></li><li><span class="et">Cundinamarca</span><span class="bar"><span style="width:11.2%"></span></span><span class="ci">$56,5 mil millones</span></li><li><span class="et">Putumayo</span><span class="bar"><span style="width:8.9%"></span></span><span class="ci">$44,9 mil millones</span></li><li><span class="et">Magdalena</span><span class="bar"><span style="width:8.8%"></span></span><span class="ci">$44,1 mil millones</span></li></ul></div>
+
+  <h2>Cómo se contrató</h2>
+  <p class="sub">Por número de contratos.</p>
+  <div class="tarjeta"><ul class="barras"><li><span class="et">Contratación Directa</span><span class="bar"><span style="width:100.0%"></span></span><span class="ci">78 %</span></li><li><span class="et">Contratación Régimen Especial</span><span class="bar"><span style="width:20.0%"></span></span><span class="ci">16 %</span></li><li><span class="et">Mínima Cuantía</span><span class="bar"><span style="width:4.5%"></span></span><span class="ci">4 %</span></li><li><span class="et">Selección Abreviada de Menor Cuantía</span><span class="bar"><span style="width:1.1%"></span></span><span class="ci">1 %</span></li><li><span class="et">Contratación Directa (con Ofertas)</span><span class="bar"><span style="width:1.1%"></span></span><span class="ci">1 %</span></li><li><span class="et">Selección Abreviada Subasta Inversa</span><span class="bar"><span style="width:0.8%"></span></span><span class="ci">1 %</span></li><li><span class="et">Contratación Régimen Especial (con Ofertas)</span><span class="bar"><span style="width:0.8%"></span></span><span class="ci">1 %</span></li><li><span class="et">Concurso de Méritos Abierto</span><span class="bar"><span style="width:0.2%"></span></span><span class="ci">0 %</span></li></ul></div>
+
+  <h2>La forma del gasto</h2>
+  <p class="sub">Muchísimos contratos pequeños, muy pocos grandes.</p>
+  <div class="tarjeta"><ul class="barras"><li><span class="et">Menos de 1 Millon</span><span class="bar"><span style="width:0.0%"></span></span><span class="ci">$21,1 millones</span></li><li><span class="et">1 A 10 Millones</span><span class="bar"><span style="width:8.3%"></span></span><span class="ci">$54,4 mil millones</span></li><li><span class="et">10 A 100 Millones</span><span class="bar"><span style="width:41.8%"></span></span><span class="ci">$272,1 mil millones</span></li><li><span class="et">100 A 1000 Millones</span><span class="bar"><span style="width:55.2%"></span></span><span class="ci">$359,7 mil millones</span></li><li><span class="et">1000 A 10 Mil Millones</span><span class="bar"><span style="width:81.7%"></span></span><span class="ci">$532,4 mil millones</span></li><li><span class="et">Mas de 10 Mil Millones</span><span class="bar"><span style="width:100.0%"></span></span><span class="ci">$651,6 mil millones</span></li></ul></div>
+
+  <div class="nota">
+    <p style="margin:0 0 10px"><strong>Qué es esto, y qué no.</strong> Cifras de SECOP, fuente oficial. Son estadística descriptiva: no señalan a nadie ni afirman que exista una conducta contraria a la ley.</p>
+    <p style="margin:0 0 10px">Vigía SECOP <strong>no señala contratos, ni
+    entidades, ni personas</strong>. No publica banderas porque no tiene ninguna
+    calibrada: se midieron tres sobre los datos reales y las tres describían la
+    mayoría del país, no la excepción. Encender una regla sin calibrar es peor
+    que no tenerla, porque una alerta inventada le cuesta a alguien su
+    reputación y no hay forma de devolvérsela.</p>
+    <p style="margin:0">Lo que sí hace es publicar los números, con su
+    cobertura al lado, para que quien quiera investigar sepa por dónde empezar.
+    Los datos vienen de <a href="https://www.datos.gov.co">datos.gov.co</a>,
+    son públicos, y cualquiera puede rehacer estas cuentas.</p>
+  </div>
+
+  
+
+  <footer>Vigía SECOP · indicadores estadísticos · no constituyen imputación</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,74 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# La configuración con secretos. NUNCA se versiona: lleva el token de Socrata
+# y la cadena de conexión a la base. La plantilla sin valores es .env.example.
+.env
+
+# Registros de la última corrida de cada script. Sirven para diagnosticar
+# —y para mandármelos cuando algo falle— pero cambian en cada ejecución y
+# no son parte del proyecto.
+*-ultima-corrida.txt
+instalacion-log.txt
+
+# ---------------------------------------------------------------------------
+# UN ARCHIVO QUE EL ANTIVIRUS DEJÓ ILEGIBLE, Y NO SE VA A PELEAR CON ÉL
+# ---------------------------------------------------------------------------
+# `instalar-tareas.ps1` está en la carpeta pero no se puede abrir: el antivirus
+# lo puso en cuarentena y dejó un cascarón. Git lo intenta leer y se cae con
+# «Function not implemented», y con eso no se puede hacer ni un commit.
+#
+# No se toca el antivirus, y no hace falta: ese script servía para crear tareas
+# programadas de Windows, y `dia.ps1` volvió esa idea innecesaria — ahora el
+# ciclo pregunta «¿qué falta?» en vez de depender de que el equipo esté
+# encendido un lunes a las siete. El archivo está muerto desde entonces.
+instalar-tareas.ps1
+EJECUTAR-instalar-tareas.bat
+
+# La bandeja donde la aplicación de escritorio deja los archivos que bajas del
+# chat. Es un buzón, no parte del proyecto.
+Claude outputs/
+
+# La herramienta con la que se construye el proyecto, no el proyecto.
+# `_bmad/` es la instalación de BMAD-method: código de terceros que se
+# reinstala con un comando y que no nos toca redistribuir. `_bmad-output/`
+# SÍ se versiona: ahí viven el PRD, las épicas y las specs, que son el
+# corazón de las decisiones y valen tanto como el código.
+_bmad/
+.claude/
+
+# ---------------------------------------------------------------------------
+# LO QUE NUNCA SE VERSIONA PORQUE LLEVA NOMBRES Y DOCUMENTOS DE PERSONAS
+# ---------------------------------------------------------------------------
+# Estas páginas son herramientas de escritorio y ahí están bien: el dato es
+# público en SECOP y quien las mira está trabajando. Pero un repositorio de
+# GitHub es internet, y `revision.html` lleva hoy cédulas de contratistas
+# personas naturales. Publicarlas es difundir un dato personal sin
+# autorización — Ley 1581 de 2012— y no se deshace con un `git rm`.
+#
+# Lo que SÍ se publica se construye aparte, en `docs/`, y sale de `boletin.sql`,
+# que por diseño no puede devolver el nombre ni el documento de nadie.
+revision.html
+revision.json
+revision-publico.json
+panel.html
+panel.json
+panel-publico.json
+portada.json
+portada.html
+resumen-*.html
+resumen-*.json
+boletin-*.txt
+boletin-*.json
+fantasmas.json
+llave.json
+plazos.json
+regimen.json
+reporte.json
+bitacora/

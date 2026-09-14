@@ -1,0 +1,184 @@
+# generated: 09-02-2026 11:57
+# project: vigia-secop
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created, ready for development
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# Action Item Status:
+#   - open: Committed during a retrospective, not yet addressed
+#   - in-progress: Actively being worked on
+#   - done: Completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when its first story starts (via build's sprint sync)
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates the next story after the previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Retrospective appends its action items to action_items; the status view surfaces open ones
+
+# NOTAS DE SECUENCIA DE ESTE PROYECTO:
+# - La épica 5 tiene una dependencia externa bloqueante: el concepto jurídico.
+#   Se puede construir en paralelo, pero no se publica nada hasta tenerlo.
+# - Las historias 4.1 a 4.8 son independientes entre sí y pueden hacerse en
+#   cualquier orden, o en paralelo.
+# - El resto va en orden numérico: la épica 1 completa antes de la 2, y así.
+
+# Timestamps use MM-DD-YYYY HH:MM.
+
+generated: 09-02-2026 11:57
+last_updated: 09-10-2026 16:20
+project: vigia-secop
+project_key: NOKEY
+tracking_system: file-system
+story_location: "_bmad-output/implementation-artifacts"
+
+development_status:
+  epic-1: in-progress
+  1-1-ingesta-cruda: review
+  1-2-marca-de-agua: review
+  1-3-validacion-de-esquema: review
+  1-4-esquema-unificado: done
+  1-5-identidad-de-proveedor: review
+  1-5b-uniones-temporales: review
+  1-6-territorio-y-orden: review
+  1-7-barrido-completo: backlog
+  # Tabla capturada y comprobada: 1 122 municipios, 66 nombres compartidos
+  # (67 al normalizar). Vive en datos/divipola_municipios.csv, versionada.
+  1-9-codigos-de-municipio: review
+  # Nace de corregir una afirmación falsa de la 1.5b: los integrantes de una
+  # unión temporal no están en `jbjy-vk9h`. Hoy no es un agujero (los contratos
+  # ya se cuentan y se listan), es una mejora.
+  1-8-integrantes-de-uniones-temporales: backlog
+  # Producto: lee panel.json y dibuja panel.html. No emite alertas y lo dice
+  # en la propia pagina; el bloque de cobertura va antes que cualquier ranking.
+  1-10-panel-de-vigia: review
+  epic-1-retrospective: optional
+
+  epic-2: in-progress
+  2-1-reglas-versionadas: review
+  2-2-identidad-de-alerta: review
+  2-3-expediente-completo: review
+  # DESCARTADA el 2026-09-06, por medicion y no por opinion. Dos numeros la
+  # mataron: (1) el 52,8 % de los competitivos adjudicados termina con un solo
+  # proveedor, o sea que marcaria la norma; (2) al buscar el criterio relativo
+  # que la salvara, la mediana de visualizaciones resulto ser 16 con un
+  # oferente contra 32 con varios. La hipotesis era «lo miraron mucho y ofertó
+  # uno»; el dato dice que una sola oferta es la marca de un proceso que NADIE
+  # MIRO. Solo 30 de 1 239 pasan el p90 de su modalidad, cuando por azar serian
+  # ~124: estan infrarrepresentados en la cola, no sobre.
+  # El motor de la epica 2 se queda entero: se cae la inquilina, no la casa.
+  # Ver la RESOLUCION al final de sprint-change-proposal-2026-09-06.md.
+  2-4-bandera-oferente-unico: descartada
+  2-5-modo-calibracion: review
+  2-6-vocabulario-prohibido: review
+  # Calendario habil colombiano: sin el, todo resumen semanal repite el error
+  # del 45,7 % que era puro almanaque.
+  1-11-calendario-habil: review
+  1-12-resumen-semanal-y-mensual: review
+  # El ciclo dejo de depender del calendario: `dia.ps1` pregunta que resumen
+  # FALTA, no que dia es hoy. Un disparador que pasa no vuelve; un archivo que
+  # no existe sigue sin existir manana. Con eso las tareas programadas —y el
+  # antivirus que las bloqueaba— dejan de ser un requisito.
+  1-13-el-dia-de-un-clic: review
+  # Lo unico usable hoy que no afirma nada: contratos y procesos que vale la
+  # pena mirar primero, cada uno con el hecho medido por el que esta listado.
+  # Existe porque las Reglas todavia no estan calibradas y encenderlas sin
+  # calibrar es peor que no tenerlas.
+  1-14-lista-de-revision: review
+  # PRIORIDAD SOBRE TODA LA EPICA 4. Buscando la 4.2 se descubrio que la fuente
+  # publica valores imposibles: un hospital con $8.054.481.856.630.300 y cinco
+  # casos del mismo numero con tres ceros de mas. Eso no es un problema de las
+  # Reglas, es un problema de TODO lo que Vigia publica hoy: un solo contrato
+  # con tres ceros de mas vuelve mentira el total del Panel y pone al de la
+  # errata en la cima del ranking, sin fallar y sin que nadie se entere.
+  # Buscar otra bandera antes de tapar esto seria construir el piso doce sobre
+  # un primer piso sin revisar.
+  # HECHA. Techo de 10^14 COP como columna GENERADA (migracion 009), asi la
+  # base y el codigo no se pueden separar. El Panel y los resumenes excluyen
+  # los imposibles de TODO total y TODO ranking y lo declaran en cobertura; la
+  # lista de revision los muestra con el valor tal como la fuente lo publica.
+  # Probado de punta a punta: con el contrato del hospital dentro, el total de
+  # la ventana pasaba de $27.009.500.000 a $8.054.481.856.630.300.
+  # 432 pruebas en verde.
+  1-15-guarda-de-valores-imposibles: review
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-cola-de-alertas: backlog
+  3-2-marcar-alertas: backlog
+  3-3-tasa-de-confirmacion: backlog
+  3-4-reglas-bajo-el-piso: backlog
+  epic-3-retrospective: optional
+
+  # DESCARTADA el mismo dia que se abrio, y por el mismo motivo que la 2.4.
+  # El campo llega perfecto —`precio_base` poblado en el 99,9 % de 10 689
+  # adjudicados— pero el 62,4 % adjudica entre el 99,90 % y el 100 % de su
+  # presupuesto, con mediana exactamente 1,0000. Es la norma, otra vez.
+  # Se comprobo ademas que `precio_base` NO se reescribe con el resultado
+  # (56 de 6 350 cambiaron, cero terminaron igual al adjudicado), asi que el
+  # numero es real y no un artefacto: el pais adjudica pegado al techo.
+  # La variante «por encima del presupuesto» (119 procesos, 1,1 %) tampoco se
+  # abre: al mirarlos son erratas de la fuente —el mismo numero con tres ceros
+  # de mas, cinco veces— y una convencion de publicacion de 10/7.
+  # Ver decision-2026-09-06-tres-banderas-y-un-piso.md.
+  epic-4: in-progress
+  4-2-adjudicacion-pegada-al-presupuesto: descartada
+  # MEDIDA el 2026-09-10 y ES LA PRIMERA QUE SOBREVIVE: exigiendo 5 contratos
+  # por entidad, la mediana de lo que se lleva el mayor proveedor es 29 % y
+  # solo el 2,1 % pasa del 90 %. Minoria medida, no norma — al reves que las
+  # tres anteriores. Y el minimo de 5 no es un umbral elegido por el tamano de
+  # la cola: quita un artefacto aritmetico (una entidad con 1 contrato tiene
+  # 100 % de concentracion por fuerza), y las 755 entidades que quita son solo
+  # 1 377 de 116 428 contratos.
+  # BLOQUEADA POR LA VENTANA: 33 dias no alcanzan para hablar de concentracion,
+  # que es un fenomeno de tiempo. Primero EJECUTAR-HISTORIA.bat (6 meses),
+  # despues se vuelve a medir, y ahi se decide.
+  4-3-concentracion-por-proveedor: in-progress
+  # Traer historia hacia atras, mes a mes, sin tocar la marca de agua del ciclo
+  # diario. Nace de dos cosas a la vez: la 4.3 la necesita, y la primera corrida
+  # ya habia gritado «VENTANA CORTA: 5538 registros nuevos en el dia mas viejo».
+  1-16-traer-historia: review
+  4-1-representante-legal-compartido: backlog
+  4-3-concentracion-por-proveedor: backlog
+  4-4-concentracion-por-ordenador: backlog
+  4-5-plazo-expres: backlog
+  4-6-posible-fraccionamiento: backlog
+  4-7-desviacion-y-prorroga: backlog
+  4-8-ejecucion-anomala: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-reporte-agregado: backlog
+  5-2-filtro-persona-natural: backlog
+  5-3-compuerta-de-aprobacion: backlog
+  5-4-sustento-visible: backlog
+  5-5-registro-y-rectificacion: backlog
+  epic-5-retrospective: optional
+
+  epic-6: backlog
+  6-1-ciclo-diario-programado: backlog
+  6-2-reporte-de-ciclo: backlog
+  6-3-reproceso-desde-crudo: backlog
+  epic-6-retrospective: optional
+
+# Action items committed during retrospectives (section created by the retrospective workflow)
+action_items: []

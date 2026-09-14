@@ -1,0 +1,73 @@
+# Comprobar el traslado y, SOLO si cuadra, intercambiar.
+#
+#   Doble clic en EJECUTAR-intercambiar-llave.bat
+#
+# La puerta no esta en este guion: esta dentro de `rellave`, que se NIEGA a
+# intercambiar si el destino perdio identidades que el origen tenia. Aqui solo
+# se llama; no hay forma de saltarsela desde fuera.
+#
+# Y aunque intercambie, no borra nada: la tabla anterior queda como
+# `crudo_registro_antes_de_005`. Volver atras son dos RENAME.
+
+$ErrorActionPreference = "Stop"
+$raiz = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location $raiz
+
+$REGISTRO = Join-Path $raiz "intercambio-ultima-corrida.txt"
+try { Start-Transcript -Path $REGISTRO -Force | Out-Null } catch { }
+
+trap {
+    Write-Host ""
+    Write-Host "   ERROR NO PREVISTO:" -ForegroundColor Red
+    Write-Host "   $_" -ForegroundColor Red
+    Write-Host "   linea $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor DarkGray
+    try { Stop-Transcript | Out-Null } catch { }
+    Read-Host "   Enter para cerrar"
+    exit 1
+}
+
+$DSN = "postgresql://vigia:vigia@localhost:5432/vigia"
+
+$pyExe = $null; $pyArgs = @()
+foreach ($c in @(@{ exe = "py"; args = @("-3") }, @{ exe = "python"; args = @() }, @{ exe = "python3"; args = @() })) {
+    if (-not (Get-Command $c.exe -ErrorAction SilentlyContinue)) { continue }
+    $v = & $c.exe @($c.args) --version 2>&1 | Out-String
+    if ($v -match "Python (\d+)\.(\d+)" -and [int]$Matches[1] -eq 3 -and [int]$Matches[2] -ge 11) {
+        $pyExe = $c.exe; $pyArgs = $c.args; break
+    }
+}
+if (-not $pyExe) {
+    Write-Host "No encuentro Python 3.11 o superior." -ForegroundColor Red
+    try { Stop-Transcript | Out-Null } catch { }
+    Read-Host "Enter para cerrar"; exit 1
+}
+
+Write-Host "Vigia SECOP - comprobar e intercambiar la llave" -ForegroundColor White
+Write-Host ""
+Write-Host "== 1 de 2 : Comprobar (no toca nada)" -ForegroundColor Cyan
+& $pyExe @pyArgs -m vigia.crudo.rellave --dsn $DSN --solo-comprobar
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "   La comprobacion fallo. No sigo." -ForegroundColor Red
+    try { Stop-Transcript | Out-Null } catch { }
+    Read-Host "Enter para cerrar"; exit 1
+}
+
+Write-Host ""
+Write-Host "== 2 de 2 : Intercambiar" -ForegroundColor Cyan
+Write-Host "   Si alguna linea de arriba dice MAL, `rellave` se va a negar." -ForegroundColor DarkGray
+Write-Host ""
+& $pyExe @pyArgs -m vigia.crudo.rellave --dsn $DSN --intercambiar
+if ($LASTEXITCODE -ne 0) {
+    Write-Host ""
+    Write-Host "   NO se intercambio. crudo_registro sigue intacta." -ForegroundColor Yellow
+    Write-Host "   Manda lo de arriba y lo miramos." -ForegroundColor Yellow
+    try { Stop-Transcript | Out-Null } catch { }
+    Read-Host "Enter para cerrar"; exit 1
+}
+
+Write-Host ""
+Write-Host "== HECHO ==" -ForegroundColor Green
+Write-Host "La tabla anterior quedo como crudo_registro_antes_de_005 y no se ha borrado." -ForegroundColor White
+Write-Host "Quedo escrito en: $REGISTRO" -ForegroundColor DarkGray
+try { Stop-Transcript | Out-Null } catch { }
+Read-Host "Enter para cerrar"
