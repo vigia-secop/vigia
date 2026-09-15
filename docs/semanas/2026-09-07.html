@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vigía · 7 de septiembre al 13 de septiembre de 2026</title>
+<meta name="description" content="8.642 contratos por $626,5 mil millones en 5 días hábiles — $125,3 mil millones al día. 1.030 entidades, 8.507 contratistas.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20165%20104%22%20height%3D%2232%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20role%3D%22img%22%20aria-label%3D%22Vig%C3%ADa%22%3E%3Cpath%20d%3D%22M%202.00%2052.00%20Q%2082.50%20-48.00%20163.00%2052.00%20Q%2082.50%20152.00%202.00%2052.00%20Z%22%20fill%3D%22none%22%20stroke%3D%22%2304275D%22%20stroke-width%3D%223.0%22%2F%3E%3Cpath%20d%3D%22M%2038.71%2031.50%20L%2082.50%2081.50%20L%2082.50%2072.00%20L%2045.79%2031.50%20Z%22%20fill%3D%22%2304275D%22%2F%3E%3Cpath%20d%3D%22M%20126.29%2031.50%20L%2082.50%2081.50%20L%2082.50%2072.00%20L%20119.21%2031.50%20Z%22%20fill%3D%22%2304275D%22%2F%3E%3C%2Fsvg%3E">
+<!-- Lo que X, WhatsApp y LinkedIn muestran al compartir el enlace. El título
+     y la descripción llevan las cifras de ESTA semana; la imagen es fija y se
+     genera una sola vez, así publicar no necesita ninguna librería de imagen
+     en el equipo de quien publica. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Vigía · 7 de septiembre al 13 de septiembre">
+<meta property="og:description" content="8.642 contratos por $626,5 mil millones en 5 días hábiles — $125,3 mil millones al día. 1.030 entidades, 8.507 contratistas.">
+<meta property="og:image" content="img/vigia-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Vigía · 7 de septiembre al 13 de septiembre">
+<meta name="twitter:description" content="8.642 contratos por $626,5 mil millones en 5 días hábiles — $125,3 mil millones al día. 1.030 entidades, 8.507 contratistas.">
+<meta name="twitter:image" content="img/vigia-card.png">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+:root {
+  --papel:#EEF1F1; --superficie:#FFFFFF; --borde:#D3DADB; --borde-sutil:#E4E9E9;
+  --tinta:#0E1719; --tinta-2:#3A4A4D; --tinta-3:#6B7B7E;
+  --acento:#0091A8; --acento-flojo:#DCEFF3;
+  --sube:#1D6B4F; --baja:#A8451B; --aviso:#A8620F; --aviso-flojo:#F6E9D8;
+  --marca:#04275D;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --papel:#10171A; --superficie:#171F22; --borde:#2B383C; --borde-sutil:#212B2E;
+    --tinta:#E8EDED; --tinta-2:#AEBDBF; --tinta-3:#7C8C8F;
+    --acento:#22A0B8; --acento-flojo:#12313A;
+    --sube:#4FB489; --baja:#D98055; --aviso:#D9903F; --aviso-flojo:#31261A;
+    --marca:#8FB2E8;
+  }
+}
+:root[data-theme="dark"] {
+  --papel:#10171A; --superficie:#171F22; --borde:#2B383C; --borde-sutil:#212B2E;
+  --tinta:#E8EDED; --tinta-2:#AEBDBF; --tinta-3:#7C8C8F;
+  --acento:#22A0B8; --acento-flojo:#12313A;
+  --sube:#4FB489; --baja:#D98055; --aviso:#D9903F; --aviso-flojo:#31261A;
+  --marca:#8FB2E8;
+}
+*,*::before,*::after { box-sizing:border-box; }
+body { margin:0; background:var(--papel); color:var(--tinta);
+  font-family:Archivo,"Segoe UI",system-ui,sans-serif; font-size:16px; line-height:1.6; }
+.env { max-width:800px; margin:0 auto; padding:40px 20px 80px; }
+header.top { border-bottom:2px solid var(--tinta); padding-bottom:20px; }
+.marca { display:flex; align-items:center; gap:14px; color:var(--marca); }
+.marca svg { flex:0 0 auto; }
+h1 { margin:0; font-size:30px; letter-spacing:-.02em; }
+.lema { margin:6px 0 0; color:var(--tinta-2); font-family:"Source Serif 4",Georgia,serif;
+  font-size:18px; }
+.per { margin-top:14px; font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:13px; color:var(--tinta-3); }
+h2 { font-size:20px; margin:44px 0 4px; letter-spacing:-.01em; }
+h2 + .sub { margin:0 0 16px; color:var(--tinta-3); font-size:14.5px; }
+.cifras { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  margin-top:26px; }
+.caja { background:var(--superficie); border:1px solid var(--borde); border-radius:8px;
+  padding:16px 18px; }
+.rot { font-size:12px; text-transform:uppercase; letter-spacing:.07em; color:var(--tinta-3); }
+.dat { font-size:27px; font-weight:600; letter-spacing:-.02em; margin-top:4px; }
+.var { font-size:13px; font-weight:600; margin-top:2px; }
+.sube { color:var(--sube); } .baja { color:var(--baja); } .neutro { color:var(--tinta-3); }
+.pie { font-size:12.5px; color:var(--tinta-3); margin-top:6px; }
+.tarjeta { background:var(--superficie); border:1px solid var(--borde);
+  border-radius:8px; padding:18px 20px; }
+.alcance { border-left:3px solid var(--aviso); background:var(--aviso-flojo); }
+.alcance li { margin:8px 0; }
+.alcance ul { margin:10px 0 0; padding-left:20px; }
+.barras { list-style:none; margin:0; padding:0; }
+.barras li { display:grid; grid-template-columns:1fr 2fr auto; gap:12px;
+  align-items:center; padding:7px 0; border-bottom:1px solid var(--borde-sutil); }
+.barras li:last-child { border-bottom:0; }
+.et { font-size:14px; }
+.ci { font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:13px;
+  text-align:right; white-space:nowrap; }
+.bar { display:block; height:7px; background:var(--borde-sutil); border-radius:4px;
+  overflow:hidden; }
+.bar > span { display:block; height:100%; background:var(--acento); }
+.nota { margin-top:44px; padding:18px 20px; border:1px solid var(--borde);
+  border-radius:8px; background:var(--superficie); font-size:14.5px; color:var(--tinta-2); }
+.nota strong { color:var(--tinta); }
+.archivo { list-style:none; padding:0; margin:10px 0 0; }
+.archivo li { padding:6px 0; border-bottom:1px solid var(--borde-sutil); }
+a { color:var(--acento); }
+footer { margin-top:52px; padding-top:18px; border-top:1px solid var(--borde);
+  font-size:13px; color:var(--tinta-3); }
+.vacio { color:var(--tinta-3); font-size:14px; margin:0; }
+@media (max-width:520px) {
+  .barras li { grid-template-columns:1fr auto; }
+  .bar { display:none; }
+}
+</style>
+</head>
+<body>
+<div class="env">
+
+  <header class="top">
+    <div class="marca"><svg viewBox="0 0 165 104" height="54" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Vigía"><path d="M 2.00 52.00 Q 82.50 -48.00 163.00 52.00 Q 82.50 152.00 2.00 52.00 Z" fill="none" stroke="currentColor" stroke-width="3.0"/><path d="M 38.71 31.50 L 82.50 81.50 L 82.50 72.00 L 45.79 31.50 Z" fill="currentColor"/><path d="M 126.29 31.50 L 82.50 81.50 L 82.50 72.00 L 119.21 31.50 Z" fill="currentColor"/></svg><h1>Vigía</h1></div>
+    <p class="lema">Cuánto contrata el Estado colombiano, y qué parte no se puede ver.</p>
+    <p class="per">7 de septiembre al 13 de septiembre de 2026
+      · 5 días hábiles · datos al 2026-09-14</p>
+  </header>
+
+  <div class="cifras">
+    <div class="caja"><div class="rot">Contratos firmados</div>
+      <div class="dat">8.642</div>
+      <div class="var baja">-63,5 %</div>
+      <div class="pie">1.728 al día · por día hábil, contra el período anterior</div></div>
+    <div class="caja"><div class="rot">Valor</div>
+      <div class="dat">$626,5 mil millones</div>
+      <div class="var baja">-66,7 %</div>
+      <div class="pie">$125,3 mil millones al día</div></div>
+    <div class="caja"><div class="rot">Entidades</div>
+      <div class="dat">1.030</div>
+      <div class="pie">contrataron en el período</div></div>
+    <div class="caja"><div class="rot">Contratistas</div>
+      <div class="dat">8.507</div>
+      <div class="pie">identidades distintas</div></div>
+  </div>
+
+  <h2>Todo se compara por día hábil</h2>
+  <p class="sub">Y no por cortesía estadística.</p>
+  <div class="tarjeta">
+    <p style="margin:0">Este período tuvo <strong>5 días hábiles</strong>; el anterior, <strong>5</strong>. Comparar dos períodos con conteos
+    crudos es comparar almanaques: el 3 de septiembre de 2026 los conteos sin
+    normalizar decían que la contratación había caído un 45,7 % tras el cambio
+    de gobierno. Eran dos festivos. La diferencia real era del 1,0 %.</p>
+  </div>
+
+  <h2>Lo que estas cifras no alcanzan a ver</h2>
+  <p class="sub">Va antes que cualquier ranking, a propósito.</p>
+  <div class="tarjeta alcance">
+    <p style="margin:0">Una cifra de contratación pública sin saber sobre qué
+    parte del universo se calculó es la clase de número que se lee mal. Estas
+    son las partes que quedan fuera del alcance de cada medición:</p>
+    <ul>
+      <li><strong>29 contratos</strong> de uniones temporales
+        y consorcios sin documento de identificación
+        ($143,3 mil millones, <strong>22,9 % del valor</strong>).
+        Cada uno es su propia identidad: no se les puede medir concentración
+        hasta conocer a sus integrantes, y la fuente no los publica.</li>
+      <li><strong>275 contratos</strong>
+        (3,2 %) traen llave de cruce y no encontraron
+        su proceso: sin proceso no hay modalidad ni plazo que medir.</li>
+      <li><strong>117 contratos</strong>
+        (1,4 %) sin departamento declarado.</li>
+      <li><strong>0 contratos</strong> sin valor.</li>
+    </ul>
+  </div>
+
+  <h2>Dónde se firmó</h2>
+  <p class="sub">Por valor adjudicado.</p>
+  <div class="tarjeta"><ul class="barras"><li><span class="et">Antioquia</span><span class="bar"><span style="width:100.0%"></span></span><span class="ci">$113,9 mil millones</span></li><li><span class="et">Bolivar</span><span class="bar"><span style="width:90.7%"></span></span><span class="ci">$103,3 mil millones</span></li><li><span class="et">Cauca</span><span class="bar"><span style="width:90.2%"></span></span><span class="ci">$102,7 mil millones</span></li><li><span class="et">Bogota, D.C.</span><span class="bar"><span style="width:54.3%"></span></span><span class="ci">$61,9 mil millones</span></li><li><span class="et">Valle del Cauca</span><span class="bar"><span style="width:43.1%"></span></span><span class="ci">$49,1 mil millones</span></li><li><span class="et">Cundinamarca</span><span class="bar"><span style="width:23.6%"></span></span><span class="ci">$26,9 mil millones</span></li><li><span class="et">Santander</span><span class="bar"><span style="width:18.6%"></span></span><span class="ci">$21,1 mil millones</span></li><li><span class="et">Norte de Santander</span><span class="bar"><span style="width:15.5%"></span></span><span class="ci">$17,6 mil millones</span></li></ul></div>
+
+  <h2>Cómo se contrató</h2>
+  <p class="sub">Por número de contratos.</p>
+  <div class="tarjeta"><ul class="barras"><li><span class="et">Contratación Directa</span><span class="bar"><span style="width:100.0%"></span></span><span class="ci">78 %</span></li><li><span class="et">Contratación Régimen Especial</span><span class="bar"><span style="width:18.3%"></span></span><span class="ci">14 %</span></li><li><span class="et">Mínima Cuantía</span><span class="bar"><span style="width:5.3%"></span></span><span class="ci">4 %</span></li><li><span class="et">Contratación Directa (con Ofertas)</span><span class="bar"><span style="width:1.3%"></span></span><span class="ci">1 %</span></li><li><span class="et">Selección Abreviada de Menor Cuantía</span><span class="bar"><span style="width:1.1%"></span></span><span class="ci">1 %</span></li><li><span class="et">Selección Abreviada Subasta Inversa</span><span class="bar"><span style="width:1.0%"></span></span><span class="ci">1 %</span></li><li><span class="et">Contratación Régimen Especial (con Ofertas)</span><span class="bar"><span style="width:1.0%"></span></span><span class="ci">1 %</span></li><li><span class="et">Concurso de Méritos Abierto</span><span class="bar"><span style="width:0.4%"></span></span><span class="ci">0 %</span></li></ul></div>
+
+  <h2>La forma del gasto</h2>
+  <p class="sub">Muchísimos contratos pequeños, muy pocos grandes.</p>
+  <div class="tarjeta"><ul class="barras"><li><span class="et">menos de 1 millon</span><span class="bar"><span style="width:0.0%"></span></span><span class="ci">$7,4 millones</span></li><li><span class="et">1 a 10 millones</span><span class="bar"><span style="width:10.7%"></span></span><span class="ci">$23,0 mil millones</span></li><li><span class="et">10 a 100 millones</span><span class="bar"><span style="width:41.5%"></span></span><span class="ci">$89,3 mil millones</span></li><li><span class="et">100 a 1000 millones</span><span class="bar"><span style="width:53.4%"></span></span><span class="ci">$115,1 mil millones</span></li><li><span class="et">1000 a 10 mil millones</span><span class="bar"><span style="width:85.2%"></span></span><span class="ci">$183,6 mil millones</span></li><li><span class="et">mas de 10 mil millones</span><span class="bar"><span style="width:100.0%"></span></span><span class="ci">$215,5 mil millones</span></li></ul></div>
+
+  <div class="nota">
+    <p style="margin:0 0 10px"><strong>Qué es esto, y qué no.</strong> Cifras de SECOP, fuente oficial. Son estadística descriptiva: no señalan a nadie ni afirman que exista una conducta contraria a la ley.</p>
+    <p style="margin:0 0 10px">Vigía SECOP <strong>no señala contratos, ni
+    entidades, ni personas</strong>. No publica banderas porque no tiene ninguna
+    calibrada: se midieron tres sobre los datos reales y las tres describían la
+    mayoría del país, no la excepción. Encender una regla sin calibrar es peor
+    que no tenerla, porque una alerta inventada le cuesta a alguien su
+    reputación y no hay forma de devolvérsela.</p>
+    <p style="margin:0">Lo que sí hace es publicar los números, con su
+    cobertura al lado, para que quien quiera investigar sepa por dónde empezar.
+    Los datos vienen de <a href="https://www.datos.gov.co">datos.gov.co</a>,
+    son públicos, y cualquiera puede rehacer estas cuentas.</p>
+  </div>
+
+  <h2>Ver el detalle</h2>
+  <p class="sub">Las mismas cifras, contrato por contrato.</p>
+  <div class="tarjeta">
+    <ul class="archivo">
+      <li><a href="panel.html"><strong>Panel</strong></a> — entidades,
+        contratistas, departamentos y modalidades, con el alcance de cada
+        medición declarado antes que cualquier ranking.</li>
+      <li><a href="revision.html"><strong>Qué revisar primero</strong></a> —
+        contratos que vale la pena mirar, cada uno con el hecho concreto por el
+        que está listado y el enlace a su ficha en SECOP. <strong>No son
+        alertas.</strong></li>
+    </ul>
+    <p class="sub" style="margin:14px 0 0">El NIT de las empresas va completo;
+    el documento de una persona natural va enmascarado. Para comprobar
+    cualquier contrato se usa el enlace a SECOP, que lleva a la ficha oficial
+    con todo el expediente.</p>
+  </div>
+
+  <h2>Períodos anteriores</h2><div class="tarjeta"><ul class="archivo"><li><a href="semanas/2026-09-07.html">2026-09-07</a></li><li><a href="semanas/2026-08-31.html">2026-08-31</a></li></ul></div>
+
+  <footer>Vigía SECOP · indicadores estadísticos · no constituyen imputación</footer>
+</div>
+</body>
+</html>

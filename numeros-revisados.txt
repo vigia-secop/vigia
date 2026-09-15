@@ -1,0 +1,20 @@
+# Numeros con forma de documento que YA miro una persona y no son de nadie.
+#
+# QUE ES ESTE ARCHIVO. Antes de subir, el publicador busca en todo lo que git
+# va a subir cualquier cadena de 6 a 12 digitos: la forma de una cedula. Ya
+# filtra sola lo que sabe que no lo es —cifras con separador de miles,
+# identificadores del SECOP, correos noreply de GitHub, digitos repetidos, y
+# numeros precedidos de la palabra NIT—. Lo que sobrevive a eso lo tiene que
+# haber mirado alguien.
+#
+# No hay umbral que inventarse. La pregunta es la misma que con las erratas:
+# ¿alguien lo miro?
+#
+# FORMATO: archivo:numero, y despues lo que quieras escribir.
+# Las lineas que empiezan por # son comentarios.
+#
+# ESTE ARCHIVO SI SE VERSIONA. Es el rastro de que una persona miro antes de
+# publicar, y ese rastro es la respuesta el dia que alguien reclame.
+
+_bmad-output/implementation-artifacts/spec-1-5-identidad-de-proveedor.md:900123456   2026-09-14  NIT inventado; ejemplo didactico de "un NIT y una cedula con el mismo numero son dos entidades distintas"
+_bmad-output/implementation-artifacts/deferred-work.md:431340000000   2026-09-14  el valor del contrato de Tipacoque escrito sin separador de miles dentro de una prueba; es plata, no un documento
