@@ -52,23 +52,37 @@ _bmad/
 # personas naturales. Publicarlas es difundir un dato personal sin
 # autorización — Ley 1581 de 2012— y no se deshace con un `git rm`.
 #
-# Lo que SÍ se publica se construye aparte, en `docs/`, y sale de `boletin.sql`,
-# que por diseño no puede devolver el nombre ni el documento de nadie.
-revision.html
-revision.json
-revision-publico.json
-panel.html
-panel.json
-panel-publico.json
-portada.json
-portada.html
-resumen-*.html
-resumen-*.json
-boletin-*.txt
-boletin-*.json
-fantasmas.json
-llave.json
-plazos.json
-regimen.json
-reporte.json
+# Lo que SÍ se publica se construye aparte, en `docs/`, con dos reglas
+# distintas: `boletin.sql` —el resumen semanal— no puede devolver el nombre de
+# nadie, y `portada.sql` —la página de cada día— devuelve el NIT de las
+# empresas y NUNCA el documento entero de una persona natural, enmascarado
+# dentro de la propia consulta.
+#
+# LA BARRA DEL PRINCIPIO NO ES ADORNO, Y COSTO UNA PUBLICACION.
+#
+# Un patron sin `/` en .gitignore hace match en CUALQUIER carpeta. `panel.html`
+# a secas bloqueaba el del escritorio —que es lo que se quiere— y tambien
+# `docs/panel.html`, que es justo lo que hay que publicar. El 2026-09-15 el
+# sitio subio sin el Panel ni la lista de revision y nadie se entero: git no
+# avisa de lo que ignora, simplemente no lo sube.
+#
+# Con `/` al principio, la regla solo aplica a la raiz del repositorio. Las
+# paginas de escritorio siguen fuera; las de `docs/` entran.
+/revision.html
+/revision.json
+/revision-publico.json
+/panel.html
+/panel.json
+/panel-publico.json
+/portada.json
+/portada.html
+/resumen-*.html
+/resumen-*.json
+/boletin-*.txt
+/boletin-*.json
+/fantasmas.json
+/llave.json
+/plazos.json
+/regimen.json
+/reporte.json
 bitacora/

@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel de Vigía SECOP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+:root {
+  --papel:      #EEF1F1;
+  --superficie: #FFFFFF;
+  --borde:      #D3DADB;
+  --borde-sutil:#E4E9E9;
+  --tinta:      #0E1719;
+  --tinta-2:    #3A4A4D;
+  --tinta-3:    #6B7B7E;
+  --acento:     #0091A8;
+  --acento-flojo:#DCEFF3;
+  --aviso:      #A8620F;
+  --aviso-flojo:#F6E9D8;
+  --orden-territorial:          #0091A8;
+  --orden-nacional:             #B0561B;
+  --orden-corporacion-autonoma: #5B4B8A;
+  --orden-sin-declarar:         #6E7A7D;
+  --sombra: 0 1px 2px rgba(14,23,25,.05), 0 8px 24px -16px rgba(14,23,25,.25);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --papel:      #10171A;
+    --superficie: #171F22;
+    --borde:      #2B383C;
+    --borde-sutil:#212B2E;
+    --tinta:      #E8EDED;
+    --tinta-2:    #AEBDBF;
+    --tinta-3:    #7C8C8F;
+    --acento:     #22A0B8;
+    --acento-flojo:#123239;
+    --aviso:      #D9903F;
+    --aviso-flojo:#31261A;
+    --orden-territorial:          #22A0B8;
+    --orden-nacional:             #CE7830;
+    --orden-corporacion-autonoma: #7C71C9;
+    --orden-sin-declarar:         #8A9497;
+    --sombra: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"] {
+  --papel:      #10171A;
+  --superficie: #171F22;
+  --borde:      #2B383C;
+  --borde-sutil:#212B2E;
+  --tinta:      #E8EDED;
+  --tinta-2:    #AEBDBF;
+  --tinta-3:    #7C8C8F;
+  --acento:     #22A0B8;
+  --acento-flojo:#123239;
+  --aviso:      #D9903F;
+  --aviso-flojo:#31261A;
+  --orden-territorial:          #22A0B8;
+  --orden-nacional:             #CE7830;
+  --orden-corporacion-autonoma: #7C71C9;
+  --orden-sin-declarar:         #8A9497;
+  --sombra: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: Archivo, "Segoe UI", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.envoltura { max-width: 1120px; margin: 0 auto; padding: 32px 20px 72px; }
+
+/* ---------------------------------------------------------- encabezado */
+.cabecera {
+  display: flex; flex-wrap: wrap; gap: 16px 32px;
+  align-items: baseline; justify-content: space-between;
+  padding-bottom: 20px; border-bottom: 2px solid var(--tinta);
+}
+.marca { display: flex; flex-direction: column; gap: 2px; }
+.marca h1 {
+  margin: 0; font-size: 30px; font-weight: 700; letter-spacing: -.02em;
+  text-wrap: balance;
+}
+.marca .sub {
+  font-family: "Source Serif 4", Georgia, serif; font-size: 15px;
+  color: var(--tinta-2); max-width: 54ch;
+}
+.sello {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px; color: var(--tinta-3); text-align: right;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.sello b { color: var(--tinta-2); font-weight: 500; }
+
+/* --------------------------------------------------------------- cifras */
+.cifras {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1px; background: var(--borde); border: 1px solid var(--borde);
+  margin: 0 0 40px; border-top: none;
+}
+.cifra-caja { background: var(--superficie); padding: 18px 20px 16px; }
+.cifra-caja .rot {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .09em;
+  color: var(--tinta-3); font-weight: 600;
+}
+.cifra-caja .dat {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 26px; font-weight: 500; letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums; margin-top: 4px;
+}
+.cifra-caja .pie { font-size: 12.5px; color: var(--tinta-3); }
+
+/* -------------------------------------------------------------- bandas */
+section { margin: 0 0 44px; }
+.banda-cab { margin-bottom: 14px; }
+.banda-cab h2 {
+  margin: 0; font-size: 13px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em; color: var(--acento);
+}
+.banda-cab p {
+  margin: 6px 0 0; font-family: "Source Serif 4", Georgia, serif;
+  font-size: 14.5px; color: var(--tinta-2); max-width: 68ch;
+}
+.tarjeta {
+  background: var(--superficie); border: 1px solid var(--borde);
+  padding: 20px; box-shadow: var(--sombra);
+}
+
+/* ------------------------------------------------------------ cobertura */
+.alcance { border-left: 3px solid var(--acento); }
+.medidas { display: grid; gap: 26px; }
+@media (min-width: 780px) { .medidas { grid-template-columns: repeat(3, 1fr); gap: 28px; } }
+.medida-cab { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.medida-cab h3 { margin: 0; font-size: 14px; font-weight: 600; }
+.medida-pct {
+  font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 15px;
+  font-weight: 600; font-variant-numeric: tabular-nums; color: var(--acento);
+}
+.barra {
+  display: block; height: 5px; background: var(--borde-sutil);
+  margin-top: 6px; overflow: hidden;
+}
+.barra-ancha { height: 8px; }
+.barra-relleno { display: block; height: 100%; background: var(--acento); }
+.medida-txt { margin: 10px 0 0; font-size: 13.5px; color: var(--tinta-2); }
+.medida-aviso { border-left: 3px solid var(--aviso); padding-left: 14px;
+  background: var(--aviso-flojo); border-radius: 0 4px 4px 0; padding-right: 12px;
+  padding-top: 10px; padding-bottom: 10px; }
+.medida-aviso .medida-pct { color: var(--aviso); }
+.medida-aviso .barra { display: none; }
+.medida-det {
+  margin: 6px 0 0; font-size: 12.5px; color: var(--tinta-3);
+  border-left: 2px solid var(--aviso); padding-left: 9px;
+}
+
+/* -------------------------------------------------------------- apilada */
+.apilada { display: flex; height: 34px; gap: 2px; }
+.apilada .seg { background: var(--c); }
+.leyenda {
+  list-style: none; margin: 16px 0 0; padding: 0;
+  display: grid; gap: 12px;
+}
+@media (min-width: 700px) { .leyenda { grid-template-columns: repeat(3, 1fr); } }
+.leyenda li { display: grid; grid-template-columns: 10px 1fr; gap: 4px 9px; align-items: baseline; }
+.punto { width: 10px; height: 10px; border-radius: 50%; }
+.ley-nom { font-weight: 600; font-size: 14px; }
+.ley-val {
+  grid-column: 2; font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 15px; font-variant-numeric: tabular-nums;
+}
+.ley-sec { grid-column: 2; font-size: 12.5px; color: var(--tinta-3); }
+
+/* --------------------------------------------------------------- barras */
+.barras { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+.barras li {
+  display: grid; align-items: center; gap: 12px;
+  grid-template-columns: 26px minmax(96px, 1.1fr) minmax(90px, 3fr) 152px 62px;
+  font-size: 13.5px;
+}
+.barras .cod {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11.5px; color: var(--tinta-3);
+}
+.barras .dep { font-weight: 500; }
+.barras .pista { background: var(--borde-sutil); height: 14px; }
+.barras .marca { display: block; height: 100%; background: var(--acento); }
+.barras li.sin .marca { background: var(--tinta-3); }
+.barras li.sin .dep { color: var(--tinta-3); font-style: italic; }
+.barras .cifra, .barras .cuenta {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums; text-align: right; font-size: 13px;
+  white-space: nowrap;
+}
+.barras .cuenta { color: var(--tinta-3); }
+@media (max-width: 640px) {
+  .barras li { grid-template-columns: 24px 1fr 132px; }
+  .barras .pista, .barras .cuenta { display: none; }
+}
+
+/* --------------------------------------------------------------- tablas */
+.tabla-scroll { overflow-x: auto; }
+.tabla { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.tabla th {
+  text-align: left; font-size: 11px; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--tinta-3); font-weight: 600;
+  padding: 0 12px 8px 0; border-bottom: 1px solid var(--borde);
+  white-space: nowrap;
+}
+.tabla td {
+  padding: 9px 12px 9px 0; border-bottom: 1px solid var(--borde-sutil);
+  vertical-align: top;
+}
+.tabla tr:last-child td { border-bottom: none; }
+.tabla .num, .tabla .val {
+  text-align: right; font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.tabla .val { min-width: 152px; }
+.tabla .nom { font-weight: 500; min-width: 220px; }
+.tabla .doc {
+  display: block; font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px; color: var(--tinta-3); font-weight: 400;
+}
+.pill {
+  display: inline-block; font-size: 11px; padding: 1px 7px;
+  background: var(--acento-flojo); color: var(--tinta-2); white-space: nowrap;
+}
+.pill-ut { background: var(--aviso-flojo); color: var(--aviso); }
+/* La marca de errata usa el mismo par de tokens de aviso que la unión
+   temporal, con borde para que se distinga de ella de un vistazo: las dos
+   dicen «ojo con esta fila», pero por motivos distintos. */
+.pill-errata { background: var(--aviso-flojo); color: var(--aviso);
+  border: 1px solid var(--aviso); }
+.nota-errata { margin: 10px 0 0; font-size: 12.5px; line-height: 1.55;
+  color: var(--tinta-2); border-left: 3px solid var(--aviso);
+  background: var(--aviso-flojo); padding: 9px 12px; border-radius: 0 4px 4px 0; }
+.vacio { color: var(--tinta-3); font-style: italic; margin: 0; }
+
+/* ----------------------------------------------------------------- nota */
+.nota {
+  border: 1px solid var(--borde); border-left: 3px solid var(--aviso);
+  background: var(--superficie); padding: 18px 20px;
+  font-family: "Source Serif 4", Georgia, serif; font-size: 14.5px;
+  color: var(--tinta-2); max-width: 74ch;
+}
+.nota h2 {
+  margin: 0 0 8px; font-family: Archivo, sans-serif; font-size: 13px;
+  text-transform: uppercase; letter-spacing: .1em; color: var(--aviso);
+}
+.nota p { margin: 0 0 10px; }
+.nota p:last-child { margin-bottom: 0; }
+footer {
+  margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--borde);
+  font-size: 12px; color: var(--tinta-3);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="envoltura">
+
+  <header class="cabecera">
+    <div class="marca">
+      <h1>Panel de Vigía SECOP</h1>
+      <span class="sub">La forma de la contratación en la ventana ingerida — y,
+        sobre todo, cuánto de ella queda fuera del alcance de cada medición.</span>
+    </div>
+    <div class="sello">
+      <span>ventana <b>2026-06-10 → 2026-09-09</b></span>
+      <span>generado 2026-09-14 19:08:56</span>
+    </div>
+  </header>
+
+  <div class="cifras">
+    <div class="cifra-caja">
+      <div class="rot">Contratos</div>
+      <div class="dat">251.148</div>
+      <div class="pie">firmados en la ventana</div>
+    </div>
+    <div class="cifra-caja">
+      <div class="rot">Valor</div>
+      <div class="dat">$33,68 billones</div>
+      <div class="pie">$33.678.372.729.046</div>
+    </div>
+    <div class="cifra-caja">
+      <div class="rot">Entidades</div>
+      <div class="dat">2.704</div>
+      <div class="pie">contratantes distintas</div>
+    </div>
+    <div class="cifra-caja">
+      <div class="rot">Proveedores</div>
+      <div class="dat">216.671</div>
+      <div class="pie">identidades reales, sin contar uniones sin documento</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="banda-cab">
+      <h2>Alcance de la vigilancia</h2>
+      <p>Va antes que cualquier ranking, y no por cortesía: un listado de
+        contratistas sin saber sobre qué parte del universo se calculó es
+        justo la clase de número que se lee mal.</p>
+    </div>
+    <div class="tarjeta alcance"><div class="medidas"><div class="medida"><div class="medida-cab"><h3>Concentración por proveedor</h3><span class="medida-pct">99,6 %</span></div><span class="barra barra-ancha"><span class="barra-relleno" style="width:99.56%"></span></span><p class="medida-txt"><strong>250.038</strong> de 251.148 contratos tienen identidad de proveedor con la que se puede medir concentración.</p><p class="medida-det">Fuera: 1.091 de unión temporal o consorcio sin documento ($9,89 billones, 29,4 % del valor) y 19 sin identidad ninguna.</p></div><div class="medida"><div class="medida-cab"><h3>Cruce con el Proceso</h3><span class="medida-pct">94,1 %</span></div><span class="barra barra-ancha"><span class="barra-relleno" style="width:94.13%"></span></span><p class="medida-txt"><strong>236.415</strong> contratos encontraron su Proceso. Sin ese cruce no hay modalidad, ni fecha de publicación, ni plazo que medir.</p><p class="medida-det">Huérfanos: 14.733 traen la llave y no encontraron Proceso — casi siempre porque el Proceso es anterior a la ventana ingerida.</p></div><div class="medida"><div class="medida-cab"><h3>Corte territorial</h3><span class="medida-pct">98,4 %</span></div><span class="barra barra-ancha"><span class="barra-relleno" style="width:98.37%"></span></span><p class="medida-txt"><strong>247.061</strong> contratos tienen código DIVIPOLA de departamento.</p><p class="medida-det">Sin territorio: 4.087. El municipio va con nombre y sin código: «Argelia» son tres municipios distintos.</p></div></div></div>
+  </section>
+
+  <section>
+    <div class="banda-cab">
+      <h2>Proveedores por valor</h2>
+      <p>Ordenado por valor contratado. <strong>No es una alerta</strong>: que
+        alguien encabece esta lista no dice nada por sí solo. Las uniones
+        temporales sin documento están excluidas — cada una vale por un solo
+        contrato y aparecerían con una concentración de 1 que no significa nada.</p>
+    </div>
+    <div class="tarjeta"><div class="tabla-scroll"><table class="tabla"><thead><tr><th>Proveedor</th><th class="num">Contratos</th><th class="num">Entidades</th><th class="val">Valor</th></tr></thead><tbody><tr><td class="nom">EMBRAER S.A.<span class="doc">OTRO 07689002000189</span></td><td class="num">1</td><td class="num">1</td><td class="val" title="$1.566.000.000.000">$1,57 billones<span class="barra"><span class="barra-relleno" style="width:100.00%"></span></span></td></tr><tr><td class="nom">E-BRT MOVIL PROVISION S.A.S.<span class="doc">NIT 902083413</span></td><td class="num">1</td><td class="num">1</td><td class="val" title="$1.370.285.018.012">$1,37 billones<span class="barra"><span class="barra-relleno" style="width:87.50%"></span></span></td></tr><tr><td class="nom">FUNDACION MIL COLORES MAS<span class="doc">NIT 901597225</span></td><td class="num">8</td><td class="num">8</td><td class="val" title="$433.513.951.641">$433,5 mil millones<span class="barra"><span class="barra-relleno" style="width:27.68%"></span></span></td></tr><tr><td class="nom">CONSORCIO PACIFICO 2026<span class="doc">OTRO 902088021</span></td><td class="num">1</td><td class="num">1</td><td class="val" title="$280.522.166.486">$280,5 mil millones<span class="barra"><span class="barra-relleno" style="width:17.91%"></span></span></td></tr><tr><td class="nom">INSTITUTO PARA EL DESARROLLO DE ANTIOQUIA IDEA<span class="doc">NIT 890980179</span></td><td class="num">6</td><td class="num">4</td><td class="val" title="$194.900.503.482">$194,9 mil millones<span class="barra"><span class="barra-relleno" style="width:12.45%"></span></span></td></tr><tr><td class="nom">INSTITUCION UNIVERSITARIA ITM<span class="doc">NIT 800214750</span></td><td class="num">55</td><td class="num">5</td><td class="val" title="$185.790.508.265">$185,8 mil millones<span class="barra"><span class="barra-relleno" style="width:11.86%"></span></span></td></tr><tr><td class="nom">RENTA Y CAMPO CORREDORES S.A.<span class="doc">NIT 802017459</span></td><td class="num">9</td><td class="num">8</td><td class="val" title="$168.635.625.354">$168,6 mil millones<span class="barra"><span class="barra-relleno" style="width:10.77%"></span></span></td></tr><tr><td class="nom">EMPRESA INDUSTRIAL Y COMERCIAL DEL ESTADO AREA METROPOLITANA DE VALLEDUPAR E.I.C.E. AMV<span class="doc">NIT 901880378</span></td><td class="num">4</td><td class="num">1</td><td class="val" title="$130.000.000.000">$130,0 mil millones<span class="barra"><span class="barra-relleno" style="width:8.30%"></span></span></td></tr><tr><td class="nom">NUTRISER COLOMBIA SAS<span class="doc">NIT 900084859</span></td><td class="num">2</td><td class="num">2</td><td class="val" title="$128.933.273.411">$128,9 mil millones<span class="barra"><span class="barra-relleno" style="width:8.23%"></span></span></td></tr><tr><td class="nom">BANCO BILBAO VIZCAYA ARGENTARIA S.A. (OFICIAL)<span class="doc">NIT 860003020</span></td><td class="num">6</td><td class="num">6</td><td class="val" title="$124.221.198.972">$124,2 mil millones<span class="barra"><span class="barra-relleno" style="width:7.93%"></span></span></td></tr><tr><td class="nom">C&amp;C GLOBAL CONSULTING S.A.S<span class="doc">NIT 900990268</span></td><td class="num">2</td><td class="num">1</td><td class="val" title="$122.994.726.387">$123,0 mil millones<span class="barra"><span class="barra-relleno" style="width:7.85%"></span></span></td></tr><tr><td class="nom">ALIRIO GOMEZ G SERVICIOS DE ALIMENTACION S.A.S<span class="doc">NIT 900356683</span></td><td class="num">2</td><td class="num">1</td><td class="val" title="$119.427.752.270">$119,4 mil millones<span class="barra"><span class="barra-relleno" style="width:7.63%"></span></span></td></tr><tr><td class="nom">(sin razón social declarada) · NIT 900445736<span class="doc">NIT 900445736</span></td><td class="num">1</td><td class="num">1</td><td class="val" title="$118.274.783.168">$118,3 mil millones<span class="barra"><span class="barra-relleno" style="width:7.55%"></span></span></td></tr><tr><td class="nom">NEWSAT SAS<span class="doc">NIT 830513366</span></td><td class="num">4</td><td class="num">2</td><td class="val" title="$113.865.848.125">$113,9 mil millones<span class="barra"><span class="barra-relleno" style="width:7.27%"></span></span></td></tr><tr><td class="nom">CONSORCIO VIAL GCL<span class="doc">OTRO 195656321</span></td><td class="num">1</td><td class="num">1</td><td class="val" title="$112.233.834.677">$112,2 mil millones<span class="barra"><span class="barra-relleno" style="width:7.17%"></span></span></td></tr><tr><td class="nom">ALCALDIA MUNICIPAL DE GINEBRA<span class="doc">NIT 800100520</span></td><td class="num">2</td><td class="num">2</td><td class="val" title="$99.135.493.000">$99,1 mil millones<span class="barra"><span class="barra-relleno" style="width:6.33%"></span></span></td></tr><tr><td class="nom">ETB SA ESP<span class="doc">NIT 899999115</span></td><td class="num">20</td><td class="num">16</td><td class="val" title="$93.376.070.175">$93,4 mil millones<span class="barra"><span class="barra-relleno" style="width:5.96%"></span></span></td></tr><tr><td class="nom">BANCOLOMBIA<span class="doc">NIT 890903938</span></td><td class="num">7</td><td class="num">7</td><td class="val" title="$88.863.410.679">$88,9 mil millones<span class="barra"><span class="barra-relleno" style="width:5.67%"></span></span></td></tr><tr><td class="nom">CONSORCIO PTAP PALACE 2026<span class="doc">NIT 902097252</span></td><td class="num">1</td><td class="num">1</td><td class="val" title="$82.543.629.412">$82,5 mil millones<span class="barra"><span class="barra-relleno" style="width:5.27%"></span></span></td></tr><tr><td class="nom">UT ALIMENTAR NORTE 2026<span class="doc">NIT 902094866</span></td><td class="num">1</td><td class="num">1</td><td class="val" title="$81.540.019.500">$81,5 mil millones<span class="barra"><span class="barra-relleno" style="width:5.21%"></span></span></td></tr></tbody></table></div></div>
+  </section>
+
+  <section>
+    <div class="banda-cab">
+      <h2>Uniones temporales y consorcios sin documento</h2>
+      <p>1.091 contratos
+        ($9,89 billones,
+        29,4 % del valor de la ventana).
+        Cada uno tiene identidad propia y marcada: se cuentan y se ven, pero no
+        se les puede medir concentración hasta conocer a sus integrantes.</p>
+    </div>
+    <div class="tarjeta"><div class="tabla-scroll"><table class="tabla"><thead><tr><th>Unión temporal o consorcio</th><th>Entidad</th><th>Departamento</th><th>Estado</th><th class="val">Valor</th></tr></thead><tbody><tr><td class="nom">CONSORCIO VARIANTE ORIENTAL 057</td><td>INVIAS</td><td>BOGOTA, D.C.</td><td><span class="pill">Aprobado</span></td><td class="val">$650,4 mil millones</td></tr><tr><td class="nom">UT CHACHAGUI CAZ</td><td>INVIAS</td><td>BOGOTA, D.C.</td><td><span class="pill">Aprobado</span></td><td class="val">$291,6 mil millones</td></tr><tr><td class="nom">UT HUISITO CAZ</td><td>INVIAS</td><td>BOGOTA, D.C.</td><td><span class="pill">Aprobado</span></td><td class="val">$287,2 mil millones</td></tr><tr><td class="nom">CONSORCIO SAN ABELARDO 053</td><td>INVIAS</td><td>BOGOTA, D.C.</td><td><span class="pill">Aprobado</span></td><td class="val">$285,8 mil millones</td></tr><tr><td class="nom">CONSORCIO MIA C&amp;E</td><td>ANI</td><td>BOGOTA, D.C.</td><td><span class="pill">Aprobado</span></td><td class="val">$284,4 mil millones</td></tr><tr><td class="nom">CONSORCIO CONEXION INVIAS 055</td><td>INVIAS</td><td>BOGOTA, D.C.</td><td><span class="pill">Aprobado</span></td><td class="val">$282,1 mil millones</td></tr><tr><td class="nom">UT CATATUMBO 055 IZ</td><td>INVIAS</td><td>BOGOTA, D.C.</td><td><span class="pill">Aprobado</span></td><td class="val">$281,3 mil millones</td></tr><tr><td class="nom">CONSORCIO SANTA CLARA 054</td><td>INVIAS</td><td>BOGOTA, D.C.</td><td><span class="pill">Aprobado</span></td><td class="val">$276,5 mil millones</td></tr><tr><td class="nom">CONSORCIO CONEXION INVIAS 060</td><td>INVIAS</td><td>BOGOTA, D.C.</td><td><span class="pill">Aprobado</span></td><td class="val">$256,0 mil millones</td></tr><tr><td class="nom">UNION TEMPORAL TRONCAL DE OCCIDENTE 2035</td><td>INVIAS</td><td>BOGOTA, D.C.</td><td><span class="pill">Aprobado</span></td><td class="val">$248,5 mil millones</td></tr><tr><td class="nom">CONSORCIO CONEXION INVIAS 054</td><td>INVIAS</td><td>BOGOTA, D.C.</td><td><span class="pill">Aprobado</span></td><td class="val">$239,1 mil millones</td></tr><tr><td class="nom">CONSORCIO MGS GUAVIO</td><td>INVIAS</td><td>BOGOTA, D.C.</td><td><span class="pill">Aprobado</span></td><td class="val">$236,8 mil millones</td></tr><tr><td class="nom">CONSORCIO DESARROLLO CAUCA 061</td><td>INVIAS</td><td>BOGOTA, D.C.</td><td><span class="pill">Aprobado</span></td><td class="val">$233,3 mil millones</td></tr><tr><td class="nom">UT CONEXION BOLIVAR CZ</td><td>GOBERNACIÓN DE BOLÍVAR//</td><td>BOLIVAR</td><td><span class="pill">Aprobado</span></td><td class="val">$230,9 mil millones</td></tr><tr><td class="nom">CONSORCIO COLOMBIA AVANZA</td><td>INVIAS</td><td>BOGOTA, D.C.</td><td><span class="pill">Aprobado</span></td><td class="val">$220,0 mil millones</td></tr></tbody></table></div></div>
+  </section>
+
+  <section>
+    <div class="banda-cab">
+      <h2>Orden administrativo</h2>
+      <p>Tres valores, no dos. Las Corporaciones Autónomas Regionales no son ni
+        nacionales ni territoriales. La distinción importa desde el 7 de agosto
+        de 2026: el cambio de gobierno movió lo nacional y no movió lo
+        territorial, donde alcaldes y gobernadores siguen en su periodo.</p>
+    </div>
+    <div class="tarjeta"><div class="apilada"><span class="seg" style="width:54.86%;--c:var(--orden-territorial)" title="Territorial: $18.477.278.151.420 en 193.028 contratos"></span><span class="seg" style="width:43.67%;--c:var(--orden-nacional)" title="Nacional: $14.705.853.626.327 en 53.134 contratos"></span><span class="seg" style="width:1.47%;--c:var(--orden-corporacion-autonoma)" title="Corporación Autónoma: $495.240.951.299 en 4.986 contratos"></span></div><ul class="leyenda"><li><span class="punto" style="background:var(--orden-territorial)"></span><span class="ley-nom">Territorial</span><span class="ley-val">$18,48 billones</span><span class="ley-sec">193.028 contratos · 54,9 % del valor</span></li><li><span class="punto" style="background:var(--orden-nacional)"></span><span class="ley-nom">Nacional</span><span class="ley-val">$14,71 billones</span><span class="ley-sec">53.134 contratos · 43,7 % del valor</span></li><li><span class="punto" style="background:var(--orden-corporacion-autonoma)"></span><span class="ley-nom">Corporación Autónoma</span><span class="ley-val">$495,2 mil millones</span><span class="ley-sec">4.986 contratos · 1,5 % del valor</span></li></ul></div>
+  </section>
+
+  <section>
+    <div class="banda-cab">
+      <h2>Departamentos por valor</h2>
+      <p>Código DIVIPOLA del DANE. El valor no sigue al número de contratos, que
+        es justamente lo que hace útil el corte territorial.</p>
+    </div>
+    <div class="tarjeta"><ul class="barras"><li><span class="cod">11</span><span class="dep">Bogota, D.C.</span><span class="pista"><span class="marca" style="width:100.00%"></span></span><span class="cifra" title="$15.807.522.235.189">$15,81 billones</span><span class="cuenta">48.977</span></li><li><span class="cod">05</span><span class="dep">Antioquia</span><span class="pista"><span class="marca" style="width:27.60%"></span></span><span class="cifra" title="$4.362.141.996.194">$4,36 billones</span><span class="cuenta">33.719</span></li><li><span class="cod">76</span><span class="dep">Valle del Cauca</span><span class="pista"><span class="marca" style="width:10.36%"></span></span><span class="cifra" title="$1.637.189.523.181">$1,64 billones</span><span class="cuenta">32.490</span></li><li><span class="cod">13</span><span class="dep">Bolivar</span><span class="pista"><span class="marca" style="width:9.47%"></span></span><span class="cifra" title="$1.497.368.631.734">$1,50 billones</span><span class="cuenta">8.480</span></li><li><span class="cod">15</span><span class="dep">Boyaca</span><span class="pista"><span class="marca" style="width:6.45%"></span></span><span class="cifra" title="$1.019.771.544.097">$1,02 billones</span><span class="cuenta">6.955</span></li><li><span class="cod">25</span><span class="dep">Cundinamarca</span><span class="pista"><span class="marca" style="width:5.43%"></span></span><span class="cifra" title="$857.597.285.655">$857,6 mil millones</span><span class="cuenta">13.391</span></li><li><span class="cod">20</span><span class="dep">Cesar</span><span class="pista"><span class="marca" style="width:4.87%"></span></span><span class="cifra" title="$770.049.475.961">$770,0 mil millones</span><span class="cuenta">2.275</span></li><li><span class="cod">08</span><span class="dep">Atlantico</span><span class="pista"><span class="marca" style="width:4.82%"></span></span><span class="cifra" title="$762.417.910.335">$762,4 mil millones</span><span class="cuenta">9.256</span></li><li><span class="cod">68</span><span class="dep">Santander</span><span class="pista"><span class="marca" style="width:4.70%"></span></span><span class="cifra" title="$742.886.527.967">$742,9 mil millones</span><span class="cuenta">13.583</span></li><li><span class="cod">50</span><span class="dep">Meta</span><span class="pista"><span class="marca" style="width:3.87%"></span></span><span class="cifra" title="$611.772.599.269">$611,8 mil millones</span><span class="cuenta">7.286</span></li><li><span class="cod">73</span><span class="dep">Tolima</span><span class="pista"><span class="marca" style="width:3.51%"></span></span><span class="cifra" title="$554.269.938.986">$554,3 mil millones</span><span class="cuenta">7.272</span></li><li><span class="cod">54</span><span class="dep">Norte de Santander</span><span class="pista"><span class="marca" style="width:3.29%"></span></span><span class="cifra" title="$519.785.287.726">$519,8 mil millones</span><span class="cuenta">6.298</span></li></ul></div>
+  </section>
+
+  <section>
+    <div class="banda-cab">
+      <h2>Entidades por valor</h2>
+      <p>Cuántos proveedores distintos usa cada entidad es la columna que la
+        Regla de concentración por ordenador (4.4) mirará cuando exista.</p>
+    </div>
+    <div class="tarjeta"><div class="tabla-scroll"><table class="tabla"><thead><tr><th>Entidad</th><th class="num">Contratos</th><th class="num">Proveedores</th><th class="val">Valor</th></tr></thead><tbody><tr><td class="nom">INVIAS<span class="doc">NIT 800215807</span></td><td class="num">81</td><td class="num">43</td><td class="val">$5,44 billones</td></tr><tr><td class="nom">FUERZA AEROESPACIAL COLOMBIANA<span class="doc">NIT 899999102</span></td><td class="num">140</td><td class="num">130</td><td class="val">$1,73 billones</td></tr><tr><td class="nom">TRANSMILENIO S.A.<span class="doc">NIT 830063506</span></td><td class="num">309</td><td class="num">292</td><td class="val">$1,54 billones</td></tr><tr><td class="nom">DISTRITO ESPECIAL DE CIENCIA TECNOLOGIA E INNOVACION DE MEDELLIN<span class="doc">NIT 890905211</span></td><td class="num">357</td><td class="num">188</td><td class="val">$1,34 billones</td></tr><tr><td class="nom">(Secretaría Distrital de Integración Social)<span class="doc">NIT 8999990619</span></td><td class="num">7.405</td><td class="num">7.317</td><td class="val">$807,3 mil millones</td></tr><tr><td class="nom">GOBERNACIÓN DE BOLÍVAR//<span class="doc">NIT 890480059</span></td><td class="num">1.532</td><td class="num">1.502</td><td class="val">$760,0 mil millones</td></tr><tr><td class="nom">ANI<span class="doc">NIT 8301259969</span></td><td class="num">178</td><td class="num">167</td><td class="val">$694,6 mil millones</td></tr><tr><td class="nom">ALCALDÍA MUNICIPAL DE TIPACOQUE<span class="doc">NIT 800099187</span></td><td class="num">2</td><td class="num">2</td><td class="val">$431,6 mil millones</td></tr><tr><td class="nom">ALCALDÍA DEL DISTRITO TURÍSTICO Y CULTURAL DE CARTAGENA DE INDIAS<span class="doc">NIT 890480184</span></td><td class="num">2.136</td><td class="num">2.119</td><td class="val">$386,3 mil millones</td></tr><tr><td class="nom">DEPARTAMENTO DE ANTIOQUIA//<span class="doc">NIT 890900286</span></td><td class="num">457</td><td class="num">199</td><td class="val">$293,4 mil millones</td></tr><tr><td class="nom">GOBERNACION DEL DEPARTAMENTO DEL CESAR<span class="doc">NIT 892399999</span></td><td class="num">58</td><td class="num">39</td><td class="val">$252,6 mil millones</td></tr><tr><td class="nom">AGENCIA LOGISTICA DE LAS FUERZAS MILITARES<span class="doc">NIT 899999162</span></td><td class="num">142</td><td class="num">112</td><td class="val">$220,8 mil millones</td></tr><tr><td class="nom">EMPRESA DE DESARROLLO URBANO DE MEDELLIN<span class="doc">NIT 800223337</span></td><td class="num">302</td><td class="num">245</td><td class="val">$216,5 mil millones</td></tr><tr><td class="nom">INSTITUTO DE DEPORTES Y RECREACION DE MEDELLIN<span class="doc">NIT 800194096</span></td><td class="num">2.351</td><td class="num">2.315</td><td class="val">$216,0 mil millones</td></tr><tr><td class="nom">DISTRITO ESPECIAL INDUSTRIAL Y PORTUARIO DE BARRANQUILLA<span class="doc">NIT 890102018</span></td><td class="num">3.337</td><td class="num">3.300</td><td class="val">$214,4 mil millones</td></tr></tbody></table></div></div>
+  </section>
+
+  <section>
+    <div class="banda-cab">
+      <h2>Contratos mayores</h2>
+      <p>Los diez de más valor de la ventana, con su identificador del SECOP.</p>
+    </div>
+    <div class="tarjeta"><div class="tabla-scroll"><table class="tabla"><thead><tr><th>Proveedor</th><th>Entidad</th><th>Departamento</th><th class="val">Valor</th></tr></thead><tbody><tr><td class="nom">EMBRAER S.A. <span class="doc">CO1.PCCNTR.9755406</span></td><td>FUERZA AEROESPACIAL COLOMBIANA</td><td>Bogota, D.C.</td><td class="val">$1,57 billones</td></tr><tr><td class="nom">E-BRT MOVIL PROVISION S.A.S. <span class="doc">CO1.PCCNTR.9609964</span></td><td>TRANSMILENIO S.A.</td><td>Bogota, D.C.</td><td class="val">$1,37 billones</td></tr><tr><td class="nom">CONSORCIO VARIANTE ORIENTAL 057 <span class="pill pill-ut">unión temporal</span><span class="doc">CO1.PCCNTR.9496559</span></td><td>INVIAS</td><td>Bogota, D.C.</td><td class="val">$650,4 mil millones</td></tr><tr><td class="nom">FUNDACION MIL COLORES MAS <span class="pill pill-errata">probable errata: $431,3 millones en el proceso</span><span class="doc">CO1.PCCNTR.9762242</span></td><td>ALCALDÍA MUNICIPAL DE TIPACOQUE</td><td>Boyaca</td><td class="val">$431,3 mil millones</td></tr><tr><td class="nom">UT CHACHAGUI CAZ <span class="pill pill-ut">unión temporal</span><span class="doc">CO1.PCCNTR.9410612</span></td><td>INVIAS</td><td>Bogota, D.C.</td><td class="val">$291,6 mil millones</td></tr><tr><td class="nom">UT HUISITO CAZ <span class="pill pill-ut">unión temporal</span><span class="doc">CO1.PCCNTR.9532907</span></td><td>INVIAS</td><td>Bogota, D.C.</td><td class="val">$287,2 mil millones</td></tr><tr><td class="nom">CONSORCIO SAN ABELARDO 053 <span class="pill pill-ut">unión temporal</span><span class="doc">CO1.PCCNTR.9532906</span></td><td>INVIAS</td><td>Bogota, D.C.</td><td class="val">$285,8 mil millones</td></tr><tr><td class="nom">CONSORCIO MIA C&amp;E <span class="pill pill-ut">unión temporal</span><span class="doc">CO1.PCCNTR.9691003</span></td><td>ANI</td><td>Bogota, D.C.</td><td class="val">$284,4 mil millones</td></tr><tr><td class="nom">CONSORCIO CONEXION INVIAS 055 <span class="pill pill-ut">unión temporal</span><span class="doc">CO1.PCCNTR.9499583</span></td><td>INVIAS</td><td>Bogota, D.C.</td><td class="val">$282,1 mil millones</td></tr><tr><td class="nom">UT CATATUMBO 055 IZ <span class="pill pill-ut">unión temporal</span><span class="doc">CO1.PCCNTR.9499584</span></td><td>INVIAS</td><td>Bogota, D.C.</td><td class="val">$281,3 mil millones</td></tr></tbody></table></div><p class="nota-errata">Una fila marcada <strong>probable errata</strong> tiene un valor adjudicado que es exactamente mil o diez mil veces el presupuesto oficial de su propio proceso. Eso es la firma de una tecla de más, no la de un sobrecosto. <strong>No la compartas como hallazgo sin abrir antes la ficha del SECOP.</strong></p></div>
+  </section>
+
+  <div class="nota">
+    <h2>Qué no hace este panel</h2>
+    <p>No emite alertas y no califica ningún contrato. Muestra la forma de una
+      ventana de contratación y el alcance real de cada medición.</p>
+    <p>Las Reglas —oferente único, plazo exprés, posible fraccionamiento,
+      concentración— vendrán después, y ninguna se enciende sin calibrar antes
+      contra datos reales. Una alerta inventada le costaría a alguien su
+      reputación, y es exactamente lo que este proyecto no se puede permitir.</p>
+  </div>
+
+  <footer>Vigía SECOP · datos de datos.gov.co (SECOP II) · generado 2026-09-14 19:08:56</footer>
+</div>
+</body>
+</html>
