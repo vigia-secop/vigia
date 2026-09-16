@@ -86,3 +86,7 @@ _bmad/
 /regimen.json
 /reporte.json
 bitacora/
+
+# El candado que deja el ciclo diario mientras trabaja. Es estado de esta
+# maquina, no del proyecto: en el servidor lo pone y lo quita el ciclo de alla.
+/ciclo-en-curso.lock
