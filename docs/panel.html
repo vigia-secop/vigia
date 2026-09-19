@@ -269,6 +269,19 @@ footer {
   font-family: "IBM Plex Mono", ui-monospace, monospace;
 }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+.navsitio { display:flex; flex-wrap:wrap; gap:7px; margin-top:16px; }
+.navsitio a, .navsitio span { font-size:13.5px; padding:7px 13px; border-radius:999px;
+  text-decoration:none; border:1px solid var(--borde); background:var(--superficie);
+  color:var(--tinta-2); transition:border-color .15s ease, color .15s ease; }
+.navsitio a:hover { border-color:var(--acento); color:var(--tinta); }
+.navsitio a:focus-visible { outline:2px solid var(--acento); outline-offset:2px; }
+.navsitio [aria-current="page"] { background:var(--tinta); border-color:var(--tinta);
+  color:var(--papel); font-weight:600; }
+.pagina { margin:34px 0 2px; font-size:24px; letter-spacing:-.02em; }
+.pagina + .sub { margin:0 0 4px; color:var(--tinta-2); font-family:"Source Serif 4",Georgia,serif;
+  font-size:17px; }
+
 </style>
 </head>
 <body>
@@ -277,15 +290,17 @@ footer {
 
   <header class="cabecera">
     <div class="marca">
-      <h1>Panel de Vigía SECOP</h1>
+      <h1>Vigía SECOP · Panel</h1>
       <span class="sub">La forma de la contratación en la ventana ingerida — y,
         sobre todo, cuánto de ella queda fuera del alcance de cada medición.</span>
     </div>
     <div class="sello">
       <span>ventana <b>2026-06-10 → 2026-09-14</b></span>
-      <span>generado 2026-09-19 07:38:41</span>
+      <span>generado 2026-09-19 08:25:41</span>
     </div>
   </header>
+
+  <nav class="navsitio" aria-label="Secciones de Vigía"><a href="index.html">Hoy</a><a href="archivo.html">El archivo</a><a href="semana.html">El período</a><span aria-current="page">Panel</span><a href="revision.html">Qué mirar primero</a></nav>
 
   <div class="cifras">
     <div class="cifra-caja">
@@ -390,7 +405,7 @@ footer {
       reputación, y es exactamente lo que este proyecto no se puede permitir.</p>
   </div>
 
-  <footer>Vigía SECOP · datos de datos.gov.co (SECOP II) · generado 2026-09-19 07:38:41</footer>
+  <footer>Vigía SECOP · datos de datos.gov.co (SECOP II) · generado 2026-09-19 08:25:41</footer>
 </div>
 </body>
 </html>

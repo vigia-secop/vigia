@@ -122,6 +122,19 @@ footer { margin-top:52px; padding-top:18px; border-top:1px solid var(--borde);
 @media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
 
 
+.navsitio { display:flex; flex-wrap:wrap; gap:7px; margin-top:16px; }
+.navsitio a, .navsitio span { font-size:13.5px; padding:7px 13px; border-radius:999px;
+  text-decoration:none; border:1px solid var(--borde); background:var(--superficie);
+  color:var(--tinta-2); transition:border-color .15s ease, color .15s ease; }
+.navsitio a:hover { border-color:var(--acento); color:var(--tinta); }
+.navsitio a:focus-visible { outline:2px solid var(--acento); outline-offset:2px; }
+.navsitio [aria-current="page"] { background:var(--tinta); border-color:var(--tinta);
+  color:var(--papel); font-weight:600; }
+.pagina { margin:34px 0 2px; font-size:24px; letter-spacing:-.02em; }
+.pagina + .sub { margin:0 0 4px; color:var(--tinta-2); font-family:"Source Serif 4",Georgia,serif;
+  font-size:17px; }
+
+
 .estado { margin-top:14px; font-size:13px; color:var(--tinta-3);
   font-family:"IBM Plex Mono",ui-monospace,monospace; }
 .festivo { margin-top:22px; border-left:3px solid var(--aviso);
@@ -167,8 +180,9 @@ table.dia td:last-child, table.dia th:last-child { padding-right:0; }
     <div class="marca"><svg viewBox="0 0 165 104" height="54" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Vigía"><path d="M 2.00 52.00 Q 82.50 -48.00 163.00 52.00 Q 82.50 152.00 2.00 52.00 Z" fill="none" stroke="#04275D" stroke-width="3.0"/><path d="M 38.71 31.50 L 82.50 81.50 L 82.50 72.00 L 45.79 31.50 Z" fill="#04275D"/><path d="M 126.29 31.50 L 82.50 81.50 L 82.50 72.00 L 119.21 31.50 Z" fill="#04275D"/></svg><h1>Vigía</h1></div>
     <p class="lema">Cuánto contrata el Estado colombiano, y qué parte no se puede ver.</p>
     <p class="per">lunes 14 de septiembre de 2026</p>
-    <p class="estado">Página rehecha sola · datos al 2026-09-19 07:46 ·
+    <p class="estado">Página rehecha sola · datos al 2026-09-19 08:31 ·
       histórico de 97 días</p>
+    <nav class="navsitio" aria-label="Secciones de Vigía"><span aria-current="page">Hoy</span><a href="archivo.html">El archivo</a><a href="semana.html">El período</a><a href="panel.html">Panel</a><a href="revision.html">Qué mirar primero</a></nav>
   </header>
 
   
@@ -261,13 +275,6 @@ table.dia td:last-child, table.dia th:last-child { padding-right:0; }
     historia para poder publicarla sin señalar a nadie con una foto de dos
     meses. <strong>Cuando exista un indicador que aguante una medición, se
     publicará junto con su calibración.</strong> Antes no.</p>
-  </div>
-
-  <div class="enlaces">
-    <a href="archivo.html">El archivo: día, semana y mes</a>
-    <a href="semana.html">Resumen de la semana</a>
-    <a href="panel.html">Panel completo</a>
-    <a href="revision.html">Qué mirar primero</a>
   </div>
 
   <footer>
