@@ -94,3 +94,12 @@ bitacora/
 # El JSON del archivo: lo produce `archivo.sql` en cada publicacion y pesa.
 # La pagina que sale de el —docs/archivo.html— si se versiona.
 /archivo.json
+
+# La calibracion: lleva documentos de proveedor enteros y nombres de entidad.
+# Es material de trabajo del escritorio, no del repositorio.
+/calibracion-fraccionamiento.json
+/calibracion-fraccionamiento.txt
+
+# El JSON de banderas: lleva el documento entero del contratista. La pagina
+# que sale de el -docs/banderas.html- si se versiona, ya enmascarada.
+/banderas.json
