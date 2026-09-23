@@ -38,6 +38,7 @@ from pathlib import Path
 
 from vigia.documento import escribir as documento
 from vigia.panel import compacto, e, numero, pesos, titulo_es
+from vigia import estilo
 
 CODIGO_USO = 2
 CODIGO_FALLO = 1
@@ -372,13 +373,14 @@ tr:last-child td {{ border-bottom:none; }}
 .vacio {{ color:var(--tinta-3); font-style:italic; margin:0; }}
 footer {{ margin-top:44px; padding-top:16px; border-top:1px solid var(--borde);
   font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--tinta-3); }}
+{estilo.NAV_CSS}
 </style>
 </head>
 <body>
 <div class="envoltura">
   <header class="top">
     <div>
-      <h1>Qué revisar primero</h1>
+      <h1>Vigía SECOP · Qué revisar primero</h1>
       <p class="lede">Contratos y procesos que vale la pena mirar antes que los
         otros, cada uno con la razón por la que está aquí.</p>
     </div>
@@ -386,6 +388,8 @@ footer {{ margin-top:44px; padding-top:16px; border-top:1px solid var(--borde);
       {numero(v.get("contratos"))} contratos · {compacto(v.get("valor"))}<br>
       generado {e(generado)}</div>
   </header>
+
+  {estilo.menu("revision.html")}
 
   {resumen}
 
@@ -454,17 +458,22 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  ATENCION: {numero(c['imposibles'])} contrato(s) con valor "
               f"imposible ({compacto(c.get('valor_imposibles'))} declarados). "
               "Estan fuera de todos los totales; se listan en revision.html.")
-    # Las erratas ×10ⁿ también se gritan, y por una razón distinta: NO están
-    # fuera de ningún total. El valor cabe en la realidad, así que entra en
-    # todas las sumas y en todos los rankings por valor. Mientras una de estas
-    # esté dentro, el contrato más grande de la ventana puede ser una tecla.
+    # Las erratas ×10ⁿ también se gritan. Durante días este mensaje dijo que
+    # «SI estan dentro de los totales», y era verdad: el valor cabe en la
+    # realidad, así que la guarda de imposibles no las atajaba y entraban en
+    # todas las sumas. Desde el 2026-09-16 están fuera de las tres salidas
+    # publicables —Panel, portada del día y boletín— y el mensaje lo dice así.
+    #
+    # Se sigue gritando en la corrida, no solo en una página que a lo mejor
+    # nadie abre: apartar un contrato del tamaño de estos es una decisión que
+    # quien publica tiene que ver, no descubrir.
     ce = datos.get("conteo_erratas") or {}
     if ce.get("erratas"):
         print(f"  ATENCION: {numero(ce['erratas'])} contrato(s) con valor "
               f"exactamente 10^n veces el presupuesto de su proceso "
-              f"({compacto(ce.get('valor_erratas'))}). Casi seguro son erratas "
-              "de tecleo y SI estan dentro de los totales. Ver revision.html "
-              "antes de publicar cualquier ranking por valor.")
+              f"({compacto(ce.get('valor_erratas'))} declarados). Casi seguro "
+              "son erratas de tecleo. Estan FUERA de todos los totales "
+              "publicados; se listan uno por uno en revision.html.")
     return 0
 
 

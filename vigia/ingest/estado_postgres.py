@@ -18,15 +18,15 @@ _INSERTAR_CICLO = """
 INSERT INTO ciclo (
     dataset, cursor_entrada, cursor_salida, desde, hasta, estado, inicio, fin,
     paginas, vistos, insertados, duplicados, recuperados_por_solapamiento,
-    en_borde_de_ventana, sin_fecha_de_hecho, huerfanos, causa, novedades,
-    ventana_dias, desde_derivado
+    en_borde_de_ventana, cambiados_en_borde, sin_fecha_de_hecho, huerfanos,
+    causa, novedades, ventana_dias, desde_derivado
 )
 VALUES (
     %(dataset)s, %(cursor_entrada)s, %(cursor_salida)s, %(desde)s, %(hasta)s,
     %(estado)s, %(inicio)s, %(fin)s, %(paginas)s, %(vistos)s, %(insertados)s,
     %(duplicados)s, %(recuperados_por_solapamiento)s, %(en_borde_de_ventana)s,
-    %(sin_fecha_de_hecho)s, %(huerfanos)s, %(causa)s, %(novedades)s,
-    %(ventana_dias)s, %(desde_derivado)s
+    %(cambiados_en_borde)s, %(sin_fecha_de_hecho)s, %(huerfanos)s, %(causa)s,
+    %(novedades)s, %(ventana_dias)s, %(desde_derivado)s
 )
 """
 
@@ -99,6 +99,7 @@ class RepositorioEstadoPostgres:
                             registro.recuperados_por_solapamiento
                         ),
                         "en_borde_de_ventana": registro.en_borde_de_ventana,
+                        "cambiados_en_borde": registro.cambiados_en_borde,
                         "sin_fecha_de_hecho": registro.sin_fecha_de_hecho,
                         "huerfanos": registro.huerfanos,
                         "causa": registro.causa,

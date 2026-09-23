@@ -1,0 +1,21 @@
+-- EL BORDE DE LA VENTANA, PARTIDO EN DOS.
+--
+-- La tabla `ciclo` guardaba `en_borde_de_ventana`: cuántos registros nuevos
+-- entraron por el día más viejo de la ventana. La alarma VENTANA CORTA se
+-- encendía con eso.
+--
+-- El 2026-09-20 encendió con 1.506. Medido después, uno por uno contra la
+-- primera vez que habíamos visto cada contrato: nuevos de verdad, cero. Los
+-- 1.506 eran contratos que ya teníamos y que el SECOP había modificado. Una
+-- versión nueva de algo que ya estaba no se pierde con una ventana corta:
+-- solo se ve tarde.
+--
+-- Desde esta migración, `en_borde_de_ventana` cuenta solo identidades nunca
+-- vistas —la alarma de verdad— y esta columna guarda las otras, que no son
+-- alarma pero sí dicen algo útil: cuántas modificaciones se habrían dejado de
+-- ver con una ventana más corta.
+--
+-- Las filas viejas quedan en NULL, no en cero. En esas corridas no se midió,
+-- y un cero diría que se midió y no hubo.
+
+ALTER TABLE ciclo ADD COLUMN IF NOT EXISTS cambiados_en_borde integer;

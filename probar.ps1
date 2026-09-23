@@ -120,9 +120,13 @@ if (-not $pyExe) {
     Mal "No encuentro Python 3.11 o superior. Instalalo desde python.org (marcando 'Add to PATH') y vuelve a correr esto."
 }
 
-# La base de datos es OPCIONAL. Sin ella se verifican 187 de las 219 pruebas y
-# la consulta real al SECOP; lo unico que se pierde son las 26 pruebas de
-# integracion y la ingesta de verdad.
+# La base de datos es OPCIONAL. Sin ella corren todas las pruebas menos las de
+# integracion, que quedan saltadas, y se hace igual la consulta real al SECOP.
+#
+# AQUI NO VA NINGUN NUMERO DE PRUEBAS. Decia "187 de 219" desde julio y el
+# 2026-09-22 ya eran 667 y 59 saltadas: un numero escrito a mano en un mensaje
+# envejece sin que nada falle, y lo que se lee en pantalla deja de ser cierto.
+# pytest ya imprime el conteo justo encima.
 #
 # Se prefiere PostgreSQL nativo sobre Docker a proposito: Docker Desktop en
 # Windows exige virtualizacion por hardware (VT-x / SVM) habilitada en la BIOS,
@@ -185,7 +189,7 @@ if ($modoBase -eq "ninguno" -and (Get-Command docker -ErrorAction SilentlyContin
 
 if ($modoBase -eq "ninguno") {
     Aviso "Sin base de datos. Sigo igual y salto lo que la necesita."
-    Aviso "Se verifican 187 de 219 pruebas y la consulta real al SECOP."
+    Aviso "Se salta lo que necesita base; el resto de las pruebas corre igual."
     Aviso "Para cerrar el circulo: instala PostgreSQL desde postgresql.org/download/windows"
 }
 
@@ -333,7 +337,7 @@ Paso 6 "Pruebas sin base de datos"
 Remove-Item Env:VIGIA_DSN_PRUEBAS -ErrorAction SilentlyContinue
 & $pyExe @pyArgs -m pytest -q
 if ($LASTEXITCODE -ne 0) { Mal "La suite de pruebas fallo." }
-Bien "las 219 pruebas pasan"
+Bien "la suite paso (el conteo va en la linea de pytest, aqui arriba)"
 
 # ---------------------------------------------------------------- PASO 7
 Paso 7 "Pruebas contra PostgreSQL real"

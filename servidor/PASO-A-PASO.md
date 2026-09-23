@@ -178,7 +178,7 @@ Te pide un nombre y un usuario que termine en `bot`. Al final te da un token
 así:
 
 ```
-7123456789:AAHxyz...
+8412:AAHxyz-y-un-monton-mas-de-caracteres
 ```
 
 **Ese token va al archivo `.env` del servidor y a ningún otro sitio.** No lo
@@ -193,7 +193,7 @@ navegador:
 https://api.telegram.org/bot<TU-TOKEN>/getUpdates
 ```
 
-Busca `"chat":{"id":123456789` — ese número es tu `TELEGRAM_CHAT`.
+Busca `"chat":{"id":` — el número que sigue es tu `TELEGRAM_CHAT`.
 
 ---
 

@@ -22,10 +22,16 @@ class RepositorioEnMemoria:
 
     def __init__(self) -> None:
         self._registros: dict[tuple[str, str, str], RegistroCrudo] = {}
+        #: (dataset, id_fila_fuente) de todo lo guardado, en cualquier versión.
+        #: Es lo que responde «¿esta identidad ya existía?» sin recorrer todo.
+        self._identidades: set[tuple[str, str]] = set()
 
     def guardar_pagina(self, registros: Sequence[RegistroCrudo]) -> ResultadoGuardado:
         insertados = 0
         duplicados = 0
+        # Se fotografía ANTES de insertar, como en Postgres: lo que entra en
+        # esta página no puede contarse a sí mismo como «ya estaba».
+        ya_existian = set(self._identidades)
         nuevos: dict[tuple[str, str, str], RegistroCrudo] = {}
         for registro in registros:
             llave = registro.llave
@@ -36,10 +42,14 @@ class RepositorioEnMemoria:
             insertados += 1
         # La página entra completa: nada se publica hasta terminar de recorrerla.
         self._registros.update(nuevos)
+        self._identidades.update(llave[:2] for llave in nuevos)
         return ResultadoGuardado(
             insertados=insertados,
             duplicados=duplicados,
             insertadas=frozenset(llave[1:] for llave in nuevos),
+            ids_nuevos=frozenset(
+                llave[1] for llave in nuevos if llave[:2] not in ya_existian
+            ),
         )
 
     def __len__(self) -> int:

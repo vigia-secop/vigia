@@ -1,0 +1,170 @@
+CALIBRACION DE LA BANDERA DE FRACCIONAMIENTO
+==============================================================
+Regla fraccionamiento v1 · estado calibracion
+Corrida 2026-09-19T17:49:51+00:00
+
+EL RECORTE
+  minimas cuantias medibles : 9423
+  entidades                 : 1429
+  del 2026-06-12 al 2026-09-14
+  grupos de dos o mas       : 614
+
+LA COBERTURA, QUE VA ANTES QUE EL RESULTADO
+  NO SE PUDIERON MIRAR 24 grupos de 23 entidades.
+    - 22 por menos de 5 mínimas cuantías
+    - 2 por techo no creíble
+  Eso NO quiere decir que esas entidades esten limpias: quiere
+  decir que su tope no significa nada y la bandera no las alcanza.
+
+EL RESULTADO
+  minimas cuantias, universo completo: 27 de 590 encendieron (4,6 %).
+  identidades unicas en la muestra: 25 de 25
+
+  DONDE ENCIENDE (top 10 entidades)
+      3  MUNICIPIO DE ZARAGOZA
+      1  AGENCIA LOGISTICA DE LAS FUERZAS MILITARES
+      1  ALCALDIA DE AGUACHICA
+      1  ALCALDIA DE CAUCASIA
+      1  ALCALDIA DISTRITAL DE BUENAVENTURA-VALLE
+      1  ALCALDIA MUNICIPAL DE GINEBRA
+      1  ALCALDIA MUNICIPIO DE CRAVO NORTE
+      1  ALCALDIA MUNICIPIO DE RICAURTE
+      1  ALCALDIA MUNICIPIO DE VIJES
+      1  Alcaldía Municipal de Villanueva Casanare
+
+  LA MUESTRA PARA LEER CON LOS OJOS (25 de 27)
+
+   1. AGENCIA LOGISTICA DE LAS FUERZAS MILITARES
+      mes 2026-09-01 · 3 contratos · $341.400.000
+      techo de la entidad $113.800.000 · x3.00
+      contratos: CO1.PCCNTR.9872893, CO1.PCCNTR.9873421, CO1.PCCNTR.9873079
+
+   2. ESM BATALLON DE ASPC NO.2 CACIQUE ALFONSO XEQUE ¨NIVEL I
+      mes 2026-07-01 · 4 contratos · $364.000.000
+      techo de la entidad $174.000.000 · x2.09
+      contratos: CO1.PCCNTR.9660182, CO1.PCCNTR.9683397, CO1.PCCNTR.9668313, CO1.PCCNTR.9619333
+
+   3. MUNICIPIO DE EL BAGRE
+      mes 2026-06-01 · 3 contratos · $143.103.000
+      techo de la entidad $49.015.800 · x2.92
+      contratos: CO1.PCCNTR.9589136, CO1.PCCNTR.9573422, CO1.PCCNTR.9589403
+
+   4. MUNICIPIO DE PUERTO RONDON
+      mes 2026-08-01 · 5 contratos · $151.019.500
+      techo de la entidad $49.019.500 · x3.08
+      contratos: CO1.PCCNTR.9862388, CO1.PCCNTR.9800090, CO1.PCCNTR.9863131, CO1.PCCNTR.9851482
+
+   5. ALCALDIA MUNICIPIO DE RICAURTE
+      mes 2026-07-01 · 3 contratos · $146.962.300
+      techo de la entidad $49.025.340 · x3.00
+      contratos: CO1.PCCNTR.9646649, CO1.PCCNTR.9725947, CO1.PCCNTR.9614926
+
+   6. MUNICIPIO DE ZARAGOZA
+      mes 2026-07-01 · 6 contratos · $209.670.330
+      techo de la entidad $49.004.200 · x4.28
+      contratos: CO1.PCCNTR.9700199, CO1.PCCNTR.9721801, CO1.PCCNTR.9698115, CO1.PCCNTR.9618049
+
+   7. ALCALDIA DE CAUCASIA
+      mes 2026-08-01 · 3 contratos · $146.680.000
+      techo de la entidad $49.000.000 · x2.99
+      contratos: CO1.PCCNTR.9788356, CO1.PCCNTR.9743490, CO1.PCCNTR.9788350
+
+   8. GOBERNACION DEL MAGDALENA
+      mes 2026-07-01 · 2 contratos · $288.000.000
+      techo de la entidad $168.000.000 · x1.71
+      contratos: CO1.PCCNTR.9595790, CO1.PCCNTR.9595789
+
+   9. MUNICIPIO DE PLANETA RICA CORDOBA
+      mes 2026-07-01 · 3 contratos · $146.739.475
+      techo de la entidad $49.000.000 · x2.99
+      contratos: CO1.PCCNTR.9643324, CO1.PCCNTR.9717652, CO1.PCCNTR.9645442
+
+  10. MUNICIPIO DE NEIVA
+      mes 2026-07-01 · 2 contratos · $220.000.000
+      techo de la entidad $110.000.000 · x2.00
+      contratos: CO1.PCCNTR.9626416, CO1.PCCNTR.9618497
+
+  11. MUNICIPIO DE SAN MIGUEL PUTUMAYO
+      mes 2026-07-01 · 3 contratos · $145.309.340
+      techo de la entidad $49.025.340 · x2.96
+      contratos: CO1.PCCNTR.9606783, CO1.PCCNTR.9627810, CO1.PCCNTR.9682336
+
+  12. ALCALDIA DISTRITAL DE BUENAVENTURA-VALLE
+      mes 2026-07-01 · 3 contratos · $223.167.748
+      techo de la entidad $103.300.000 · x2.16
+      contratos: CO1.PCCNTR.9632726, CO1.PCCNTR.9643594, CO1.PCCNTR.9607391
+
+  13. MUNICIPIO DE ZARAGOZA
+      mes 2026-08-01 · 7 contratos · $214.375.482
+      techo de la entidad $49.004.200 · x4.37
+      contratos: CO1.PCCNTR.9806074, CO1.PCCNTR.9851652, CO1.PCCNTR.9779739, CO1.PCCNTR.9851680
+
+  14. Alcaldía Municipal de Villanueva Casanare
+      mes 2026-07-01 · 4 contratos · $158.812.562
+      techo de la entidad $73.538.010 · x2.16
+      contratos: CO1.PCCNTR.9713378, CO1.PCCNTR.9682626, CO1.PCCNTR.9666021, CO1.PCCNTR.9629999
+
+  15. ALCALDIA MUNICIPIO DE VIJES
+      mes 2026-07-01 · 6 contratos · $290.911.738
+      techo de la entidad $73.526.697 · x3.96
+      contratos: CO1.PCCNTR.9736747, CO1.PCCNTR.9691465, CO1.PCCNTR.9718355, CO1.PCCNTR.9737624
+
+  16. SENA REGIONAL CHOCO Grupo de Apoyo Administrativo Mixto
+      mes 2026-06-01 · 3 contratos · $469.058.380
+      techo de la entidad $252.989.319 · x1.85
+      contratos: CO1.PCCNTR.9594903, CO1.PCCNTR.9594710, CO1.PCCNTR.9594200
+
+  17. Gobernación Norte de Santander*
+      mes 2026-09-01 · 2 contratos · $215.000.000
+      techo de la entidad $148.738.695 · x1.45
+      contratos: CO1.PCCNTR.9917444, CO1.PCCNTR.9917419
+
+  18. ALCALDIA DE AGUACHICA
+      mes 2026-06-01 · 3 contratos · $165.256.700
+      techo de la entidad $74.000.000 · x2.23
+      contratos: CO1.PCCNTR.9605113, CO1.PCCNTR.9582241, CO1.PCCNTR.9599404
+
+  19. ALCALDIA MUNICIPAL DE GINEBRA
+      mes 2026-07-01 · 4 contratos · $160.128.230
+      techo de la entidad $49.000.000 · x3.27
+      contratos: CO1.PCCNTR.9691763, CO1.PCCNTR.9691761, CO1.PCCNTR.9691667, CO1.PCCNTR.9691827
+
+  20. DEPARTAMENTO DEL ATLANTICO**
+      mes 2026-08-01 · 2 contratos · $275.090.500
+      techo de la entidad $175.090.500 · x1.57
+      contratos: CO1.PCCNTR.9699102, CO1.PCCNTR.9807351
+
+  21. ALCALDIA MUNICIPIO DE CRAVO NORTE
+      mes 2026-09-01 · 4 contratos · $149.393.000
+      techo de la entidad $49.000.000 · x3.05
+      contratos: CO1.PCCNTR.9896041, CO1.PCCNTR.9934521, CO1.PCCNTR.9934569, CO1.PCCNTR.9896609
+
+  22. REGIONAL DE ASEGURAMIENTO EN SALUD No. 1
+      mes 2026-08-01 · 2 contratos · $260.000.000
+      techo de la entidad $175.000.000 · x1.49
+      contratos: CO1.PCCNTR.9746491, CO1.PCCNTR.9855192
+
+  23. MUNICIPIO DE EL CERRITO.
+      mes 2026-07-01 · 4 contratos · $195.878.980
+      techo de la entidad $49.013.980 · x4.00
+      contratos: CO1.PCCNTR.9622762, CO1.PCCNTR.9636509, CO1.PCCNTR.9623339, CO1.PCCNTR.9609707
+
+  24. MUNICIPIO DE ZARAGOZA
+      mes 2026-08-01 · 3 contratos · $145.096.317
+      techo de la entidad $49.004.200 · x2.96
+      contratos: CO1.PCCNTR.9822819, CO1.PCCNTR.9780239, CO1.PCCNTR.9822604
+
+  25. INSTITUTO DISTRITAL DE DEPORTE Y RECREACION DE CARTAGENA
+      mes 2026-09-01 · 3 contratos · $119.012.400
+      techo de la entidad $39.670.800 · x3.00
+      contratos: CO1.PCCNTR.9912765, CO1.PCCNTR.9925375, CO1.PCCNTR.9922242
+
+--------------------------------------------------------------
+ESTO NO ES UNA PUBLICACION NI UNA ACUSACION.
+Cada contrato de estos grupos cabia en el tope: lo que pasa del tope
+es la suma. Compras repetidas, entregas por tramos y urgencias
+producen esta misma forma. Y mismo proveedor + misma entidad + mismo
+mes no quiere decir el mismo objeto.
+
+La Regla sigue en «calibracion». Activarla es un acto aparte, de
+una persona, con este informe delante.

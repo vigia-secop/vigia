@@ -20,6 +20,52 @@
 -- de una cifra. Las modalidades tampoco.
 --
 -- SE EXCLUYEN LOS VALORES IMPOSIBLES de todo total, igual que el Panel.
+-- Y DESDE EL 2026-09-16, TAMBIEN LAS ERRATAS x10^n. Ver abajo.
+
+-- LAS ERRATAS DE TECLEO, Y POR QUE ESTE ARCHIVO ERA EL MAS PELIGROSO DE LOS TRES
+--
+-- Un contrato cuyo valor adjudicado es EXACTAMENTE mil o diez mil veces el
+-- presupuesto de su propio proceso no es un sobrecosto: es una tecla de mas.
+-- El caso que lo enseno fue Tipacoque, $431.340.000.000 sobre un presupuesto
+-- de $431.340.000.
+--
+-- El Panel ya las apartaba. Este archivo NO las mencionaba ni una sola vez, y
+-- es el que alimenta `semana.html` y el hilo que se publica en X. Un boletin
+-- con una errata adentro diria una cifra inflada sin ninguna advertencia, y
+-- un post publicado no se puede retirar. De los tres sitios donde faltaba,
+-- este era el unico irreversible.
+--
+-- Misma regla que los imposibles: FUERA de todo total y de toda distribucion,
+-- DECLARADAS en cobertura con la cifra tal como la fuente la publica. No se
+-- corrige la fuente ni se adivina el valor verdadero.
+WITH errata AS MATERIALIZED (
+  SELECT id_del_proceso
+  FROM (
+    SELECT contenido->>'id_del_proceso'                       AS id_del_proceso,
+           (contenido->>'valor_total_adjudicacion')::numeric
+             / (contenido->>'precio_base')::numeric           AS razon
+    FROM (
+      SELECT DISTINCT ON (contenido->>'id_del_proceso') contenido
+      FROM crudo_registro
+      WHERE dataset = 'procesos'
+        AND contenido->>'adjudicado' = 'Si'
+        AND contenido->>'precio_base' ~ '^[0-9]+(\.[0-9]+)?$'
+        AND contenido->>'valor_total_adjudicacion' ~ '^[0-9]+(\.[0-9]+)?$'
+        AND (contenido->>'precio_base')::numeric > 0
+      ORDER BY contenido->>'id_del_proceso', consultado_en DESC
+    ) u
+  ) z
+  WHERE razon >= 100
+    AND abs(razon / power(10::numeric, round(log(razon))) - 1) < 0.001
+),
+
+-- El universo sobre el que se calcula todo lo que sale publicado.
+publicable AS (
+  SELECT c.* FROM contrato c
+  WHERE NOT EXISTS (
+    SELECT 1 FROM errata e WHERE e.id_del_proceso = c.id_del_proceso
+  )
+)
 
 SELECT json_build_object(
 
@@ -40,7 +86,7 @@ SELECT json_build_object(
       'territorial', count(*) FILTER (WHERE orden = 'TERRITORIAL'),
       'valor_nacional', coalesce(sum(valor) FILTER (WHERE orden = 'NACIONAL'), 0),
       'valor_territorial', coalesce(sum(valor) FILTER (WHERE orden = 'TERRITORIAL'), 0)
-    ) FROM contrato
+    ) FROM publicable
     WHERE fecha_de_firma BETWEEN :desde::date AND :hasta::date
       AND valor_fuera_de_escala IS NOT TRUE
   ),
@@ -56,7 +102,7 @@ SELECT json_build_object(
       'territorial', count(*) FILTER (WHERE orden = 'TERRITORIAL'),
       'valor_nacional', coalesce(sum(valor) FILTER (WHERE orden = 'NACIONAL'), 0),
       'valor_territorial', coalesce(sum(valor) FILTER (WHERE orden = 'TERRITORIAL'), 0)
-    ) FROM contrato
+    ) FROM publicable
     WHERE fecha_de_firma
           BETWEEN (:desde::date - (:hasta::date - :desde::date) - 1)
               AND (:desde::date - 1)
@@ -77,9 +123,19 @@ SELECT json_build_object(
                                       AND proceso_de_compra IS NOT NULL),
       'sin_departamento', count(*) FILTER (WHERE departamento_codigo IS NULL),
       'sin_valor', count(*) FILTER (WHERE valor IS NULL),
-      'imposibles', count(*) FILTER (WHERE valor_fuera_de_escala)
-    ) FROM contrato
-    WHERE fecha_de_firma BETWEEN :desde::date AND :hasta::date
+      'imposibles', count(*) FILTER (WHERE valor_fuera_de_escala),
+      -- LAS ERRATAS DEL PERIODO. Van aqui y no en un ranking porque no son un
+      -- hallazgo sobre nadie: son un defecto de la fuente que obliga a decir
+      -- sobre cuanto NO se esta calculando. `valor_erratas` es lo que
+      -- sumarian si no se apartaran, y se ensena a proposito.
+      'erratas', count(*) FILTER (WHERE tiene_errata),
+      'valor_erratas', coalesce(sum(valor) FILTER (WHERE tiene_errata), 0)
+    ) FROM (
+      SELECT c.*, (e.id_del_proceso IS NOT NULL) AS tiene_errata
+      FROM contrato c
+      LEFT JOIN errata e USING (id_del_proceso)
+      WHERE c.fecha_de_firma BETWEEN :desde::date AND :hasta::date
+    ) c
   ),
 
   -- HASTA DÓNDE LLEGAN NUESTROS DATOS. Sin esto, un período anterior vacío
@@ -102,7 +158,7 @@ SELECT json_build_object(
     SELECT json_agg(f) FROM (
       SELECT coalesce(departamento_nombre, 'SIN DEPARTAMENTO') AS nombre,
              count(*) AS contratos, coalesce(sum(valor), 0) AS valor
-      FROM contrato
+      FROM publicable
       WHERE fecha_de_firma BETWEEN :desde::date AND :hasta::date
         AND valor_fuera_de_escala IS NOT TRUE
       GROUP BY 1 ORDER BY sum(valor) DESC NULLS LAST LIMIT 8
@@ -114,7 +170,7 @@ SELECT json_build_object(
     SELECT json_agg(f) FROM (
       SELECT coalesce(p.modalidad, '(sin modalidad)') AS modalidad,
              count(*) AS contratos, coalesce(sum(c.valor), 0) AS valor
-      FROM contrato c JOIN proceso p USING (id_del_proceso)
+      FROM publicable c JOIN proceso p USING (id_del_proceso)
       WHERE c.fecha_de_firma BETWEEN :desde::date AND :hasta::date
         AND c.valor_fuera_de_escala IS NOT TRUE
       GROUP BY 1 ORDER BY count(*) DESC LIMIT 8
@@ -139,7 +195,7 @@ SELECT json_build_object(
                WHEN valor <     1000000 THEN 1 WHEN valor <    10000000 THEN 2
                WHEN valor <   100000000 THEN 3 WHEN valor <  1000000000 THEN 4
                WHEN valor < 10000000000 THEN 5 ELSE 6 END AS orden
-        FROM contrato
+        FROM publicable
         WHERE fecha_de_firma BETWEEN :desde::date AND :hasta::date
           AND valor_fuera_de_escala IS NOT TRUE
       ) t GROUP BY tramo, orden ORDER BY orden

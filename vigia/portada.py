@@ -41,6 +41,7 @@ from pathlib import Path
 
 from vigia.calendario import dias_habiles, es_habil, nombre_del_festivo
 from vigia.documento import persona_sin_enmascarar
+from vigia import estilo
 from vigia.estilo import BASE, tokens
 from vigia.marca import TINTA, ojo
 from vigia.panel import compacto, e, numero, titulo_es
@@ -242,6 +243,56 @@ def _barras_simples(filas, clave, formato=compacto, limite=8, titulo=True,
     return f'<ul class="barras">{"".join(cuerpo)}</ul>'
 
 
+def _tabla_de_erratas(filas) -> str:
+    """Los contratos apartados del día, con las dos cifras y el enlace.
+
+    **Apartar no puede significar tapar.** Sacarlos de las cifras evita
+    publicar un total que no se puede sostener; no publicarlos en absoluto
+    sería esconder algo que puede estar mal, y eso es exactamente lo que este
+    proyecto le reprocha a los demás.
+
+    Un valor que no cuadra con el presupuesto de su propio proceso vale la
+    pena mirarlo. Casi seguro es una tecla de más — pero «casi seguro» no es
+    «seguro», y quien decide eso no es esta página: es quien abra la ficha.
+
+    Las dos cifras juntas son el argumento entero y no obligan a Vigía a
+    acusar a nadie. El enlace deja que cualquiera lo compruebe en la fuente
+    en vez de creernos.
+    """
+    filas = [f for f in (filas or []) if f.get("valor")]
+    if not filas:
+        return ""
+    cuerpo = []
+    for f in filas:
+        enlace = str(f.get("enlace") or "")
+        ident = f.get("id_contrato") or "—"
+        ficha = (
+            f'<a href="{e(enlace)}" target="_blank" rel="noopener">{e(ident)}</a>'
+            if enlace.startswith("https://") else e(ident)
+        )
+        veces = f.get("veces")
+        cuerpo.append(
+            "<tr>"
+            f'<td>{e(f.get("proveedor") or "—")}'
+            f'<span class="doc">{e(titulo_es(f.get("entidad") or "—"))}</span>'
+            f'<span class="doc">{ficha}</span></td>'
+            f'<td class="n">{compacto(f.get("valor"))}'
+            f'<span class="doc">publicado</span></td>'
+            f'<td class="n">{compacto(f.get("presupuesto_del_proceso"))}'
+            f'<span class="doc">presupuesto'
+            + (f" · ×{numero(veces)}" if veces else "")
+            + "</span></td>"
+            "</tr>"
+        )
+    return (
+        '<div class="tabla-scroll" style="margin-top:10px">'
+        '<table class="tabla"><thead><tr>'
+        "<th>Contratista, entidad y ficha</th>"
+        '<th class="n">Valor</th><th class="n">Contra qué se comparó</th>'
+        "</tr></thead><tbody>" + "".join(cuerpo) + "</tbody></table></div>"
+    )
+
+
 def _mayores(filas) -> str:
     filas = filas or []
     if not filas:
@@ -251,11 +302,16 @@ def _mayores(filas) -> str:
         ident = f.get("id_contrato") or ""
         celda_id = (f'<a href="{e(f["enlace"])}" target="_blank" rel="noopener">'
                     f'{e(ident)}</a>') if f.get("enlace") else e(ident)
+        # LAS ERRATAS ×10ⁿ YA NO LLEGAN A ESTA TABLA. Hasta el 2026-09-16 se
+        # quedaban aquí con una etiqueta al lado y, sobre todo, seguían dentro
+        # de las cifras del día: con una sola de ellas «lo que se contrató
+        # hoy» pasaba de $6,8 mil millones a $823,5 mil millones.
+        #
+        # `portada.sql` las aparta ahora, y el aviso de más abajo dice cuántas
+        # apartó y cuánto sumaban. Marcar una fila no le quita el peso a un
+        # total; sacarla, sí — siempre que se diga.
         marca = ""
-        if f.get("errata_probable"):
-            marca = ('<span class="marca-fila errata">probable errata · el proceso '
-                     f'decía {e(compacto(f.get("valor_probable")))}</span>')
-        elif f.get("es_union"):
+        if f.get("es_union"):
             marca = '<span class="marca-fila">unión temporal · sin documento</span>'
         # El identificador del contrato va DEBAJO del contratista y no en una
         # cuarta columna: en un teléfono, o incluso a 800 px, cuatro columnas
@@ -322,14 +378,18 @@ def construir(datos: dict) -> str:
             "Un contrato de hoy tiene" if erratas_hoy == 1
             else f"{numero(erratas_hoy)} contratos de hoy tienen"
         )
+        valor_ap = cal.get("valor_erratas_hoy")
         aviso_errata = (
             '<p class="festivo"><strong>'
             f"{cuantos} un valor que es "
             "exactamente mil o diez mil veces el presupuesto de su propio "
             "proceso.</strong> Eso es la firma de una tecla de más, no la de un "
-            "sobrecosto. Siguen en la tabla, marcados y con el presupuesto al "
-            "lado: Vigía no corrige lo que la fuente publicó, pero tampoco lo "
-            "repite sin avisar.</p>"
+            f"sobrecosto. Sumaban {compacto(valor_ap)} y están <strong>fuera "
+            "de todas las cifras de esta página</strong> — ese habría sido el "
+            "tamaño del error. Vigía no corrige lo que la fuente publicó ni "
+            "adivina el valor verdadero: lo aparta, lo dice, y lo deja aquí "
+            "abajo con el enlace a la ficha oficial.</p>"
+            + _tabla_de_erratas(datos.get("erratas"))
         )
 
     primera, ultima = ven.get("primer_contrato"), ven.get("ultimo_contrato")
@@ -362,6 +422,7 @@ def construir(datos: dict) -> str:
 <style>
 {tokens()}
 {BASE}
+{estilo.NAV_CSS}
 {ESTILO}
 </style>
 </head>
@@ -374,6 +435,7 @@ def construir(datos: dict) -> str:
     <p class="per">{_dia_largo(d)}</p>
     <p class="estado">Página rehecha sola · datos al {e(generado)} ·
       histórico de {e(dias_de_historia or "—")}</p>
+    {estilo.menu("index.html")}
   </header>
 
   {aviso_dia}
@@ -447,8 +509,8 @@ def construir(datos: dict) -> str:
     aciertos.</p>
   <div class="tarjeta">
     <ul class="calidad">
-      <li><span>Contratos con probable errata ×10ⁿ, hoy</span><b>{numero(cal.get("erratas_hoy"))}</b></li>
-      <li><span>Contratos con probable errata en todo el histórico</span><b>{numero(cal.get("erratas_ventana"))}</b></li>
+      <li><span>Erratas ×10ⁿ de hoy, fuera de todas las cifras</span><b>{numero(cal.get("erratas_hoy"))}</b></li>
+      <li><span>Erratas ×10ⁿ en todo el histórico</span><b>{numero(cal.get("erratas_ventana"))}</b></li>
       <li><span>Valores imposibles, fuera de todos los totales</span><b>{numero(cal.get("imposibles"))}</b></li>
       <li><span>Contratos de hoy sin su proceso enlazado</span><b>{numero(cal.get("huerfanos_hoy"))}</b></li>
       <li><span>Histórico ingerido</span><b>{numero(ven.get("contratos"))} contratos</b></li>
@@ -468,12 +530,6 @@ def construir(datos: dict) -> str:
     historia para poder publicarla sin señalar a nadie con una foto de dos
     meses. <strong>Cuando exista un indicador que aguante una medición, se
     publicará junto con su calibración.</strong> Antes no.</p>
-  </div>
-
-  <div class="enlaces">
-    <a href="semana.html">Resumen de la semana</a>
-    <a href="panel.html">Panel completo</a>
-    <a href="revision.html">Qué mirar primero</a>
   </div>
 
   <footer>

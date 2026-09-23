@@ -48,9 +48,14 @@ class ResumenCiclo:
     #: Registros nuevos anteriores a la marca previa: los que se habrían
     #: perdido sin ventana de solapamiento.
     recuperados_por_solapamiento: int = 0
-    #: Registros nuevos en el día más viejo de la ventana. Si no es cero, la
-    #: ventana se está quedando corta y hay que ensancharla antes de perder algo.
+    #: Registros NUNCA VISTOS en el día más viejo de la ventana. Si no es
+    #: cero, la ventana se está quedando corta y hay que ensancharla antes de
+    #: perder algo. Solo cuenta identidades nuevas: ver `cambiados_en_borde`.
     en_borde_de_ventana: int = 0
+    #: Registros que YA TENÍAMOS y que la fuente modificó, en el día más viejo
+    #: de la ventana. No es una alarma —no se pierde nada—, pero dice cuántas
+    #: modificaciones se habrían dejado de ver con una ventana más corta.
+    cambiados_en_borde: int = 0
     #: Registros cuya fecha de hecho no se pudo leer del contenido.
     sin_fecha_de_hecho: int = 0
     #: La marca con la que arrancó el Ciclo. `None` en el primero del dataset.
@@ -165,6 +170,7 @@ def ingerir(
     duplicados = 0
     recuperados = 0
     en_borde = 0
+    cambiados_en_borde = 0
     sin_fecha = 0
 
     try:
@@ -204,7 +210,18 @@ def ingerir(
                 if marca_previa is not None and fecha < marca_previa:
                     recuperados += 1
                 if desde_derivado and fecha == desde:
-                    en_borde += 1
+                    # EL BORDE SE PARTE EN DOS, Y LA ALARMA SOLO MIRA UNA MITAD.
+                    #
+                    # Un registro que nunca habíamos visto, en el día más viejo
+                    # de la ventana, es un aviso de verdad: si hubiera llegado
+                    # un día después, se perdía. Uno que ya teníamos y que
+                    # cambió no se perdía de nada — solo se ve la versión
+                    # nueva. El 2026-09-20 la alarma dijo 1.506 y eran, los
+                    # 1.506, de la segunda clase.
+                    if registro.id_fila_fuente in resultado.ids_nuevos:
+                        en_borde += 1
+                    else:
+                        cambiados_en_borde += 1
             registro_log.info(
                 "página %d confirmada · dataset=%s $offset=%d vistos=%d insertados=%d",
                 paginas,
@@ -238,6 +255,7 @@ def ingerir(
         novedades=novedades,
         recuperados_por_solapamiento=recuperados,
         en_borde_de_ventana=en_borde,
+        cambiados_en_borde=cambiados_en_borde,
         sin_fecha_de_hecho=sin_fecha,
         cursor_entrada=marca_previa,
     )
@@ -387,6 +405,7 @@ def ejecutar_ciclo(
         duplicados=resumen.duplicados,
         recuperados_por_solapamiento=resumen.recuperados_por_solapamiento,
         en_borde_de_ventana=resumen.en_borde_de_ventana,
+        cambiados_en_borde=resumen.cambiados_en_borde,
         sin_fecha_de_hecho=resumen.sin_fecha_de_hecho,
         novedades=resumen.novedades,
         ventana_dias=ventana_dias,

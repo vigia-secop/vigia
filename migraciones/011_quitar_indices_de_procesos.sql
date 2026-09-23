@@ -1,0 +1,55 @@
+-- DESHACER DOS TERCIOS DE LA MIGRACIÓN 010, CON LA MEDICIÓN DELANTE.
+--
+-- La 010 creó tres índices sobre `crudo_registro`. Uno era necesario. Los
+-- otros dos los creé por una teoría sobre por qué el sitio iba lento, y la
+-- teoría era falsa. Esta migración los quita.
+--
+-- LO QUE SE MIDIÓ EL 2026-09-20 (queda en `medicion-consultas.txt`). La
+-- consulta que comparten cinco páginas —sacar el último registro de cada
+-- proceso adjudicado— se corrió dos veces: una como el planificador quiera,
+-- y otra prohibiéndole usar índices:
+--
+--     como el planificador quiere : 22.827 ms
+--     sin poder usar índice       : 18.550 ms
+--
+-- Y el plan de las dos era EL MISMO: `Parallel Seq Scan on crudo_registro`.
+-- Es decir: teniendo los índices a mano, PostgreSQL no los mira. Y hace
+-- bien — esa consulta no busca una fila, recorre las 883.444 y se queda con
+-- el último de cada proceso. Para recorrerlo todo, leer de corrido gana.
+--
+-- Un índice que nadie usa no es neutro. Ocupa disco, hay que mantenerlo en
+-- cada una de las 100.000 filas que entran por ingesta, y compite por la
+-- memoria con lo que sí se lee. `crudo_registro` pesa 1.032 MB de tabla y
+-- pesaba 2.126 MB con los índices encima.
+--
+-- EL TERCERO SE QUEDA, y no por simetría: `crudo_contrato_id_idx` SÍ se usa,
+-- y es la diferencia entre que la página de banderas salga o no salga. Con
+-- la consulta corregida el 2026-09-20:
+--
+--     Index Scan using crudo_contrato_id_idx ...  1,1 ms por enlace
+--     (antes, con el índice de fecha)           14.004 ms por enlace
+--
+-- POR QUÉ ESTO NO ES «BORRAR ALGO QUE PUEDE HACER FALTA». Un índice no
+-- guarda información: es una copia ordenada de lo que ya está en la tabla.
+-- Si mañana hace falta, se vuelve a crear con la 010, que sigue en esta
+-- carpeta y sigue siendo idempotente. Lo único que se pierde son los
+-- minutos de reconstruirlo.
+
+DROP INDEX IF EXISTS crudo_proceso_id_idx;
+DROP INDEX IF EXISTS crudo_proceso_id_consultado_idx;
+
+-- ESTA MIGRACIÓN SOLA NO BASTA, Y CONVIENE SABER POR QUÉ.
+--
+-- En un proyecto con tabla de migraciones aplicadas, una migración vieja es
+-- historia y no se toca: se corrige con otra encima, como ésta. Aquí no hay
+-- tal tabla. `ciclo-diario.ps1` y `publicar.ps1` aplican TODOS los archivos
+-- de esta carpeta, en orden, TODOS los días, porque todos son idempotentes.
+--
+-- Así que dejar la 010 intacta significaría: cada mañana la 010 reconstruye
+-- dos índices de 1 GB —diecinueve minutos el 2026-09-19— y treinta segundos
+-- después esta 011 los borra. Todos los días. Para nada.
+--
+-- Por eso las dos líneas de `CREATE INDEX` de los procesos salieron también
+-- de la 010, con su explicación allá. Esta migración es para las bases que
+-- ya los tienen creados de antes.
+ANALYZE crudo_registro;

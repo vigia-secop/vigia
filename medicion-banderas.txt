@@ -1,0 +1,123 @@
+﻿DONDE SE VAN LOS MINUTOS - 2026-09-20 14:03:33
+
+==============================================================
+  1 de 3 : El plan de banderas.sql (sin correrlo)
+==============================================================
+                                                                                                                                                                                                                                          QUERY PLAN                                                                                                                                                                                                                                          
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Result  (cost=39411505.26..39411505.28 rows=1 width=32)
+   CTE errata
+     ->  Subquery Scan on u  (cost=146941.85..146941.94 rows=1 width=32)
+           Filter: (((((u.contenido ->> 'valor_total_adjudicacion'::text))::numeric / ((u.contenido ->> 'precio_base'::text))::numeric) >= '100'::numeric) AND (abs((((((u.contenido ->> 'valor_total_adjudicacion'::text))::numeric / ((u.contenido ->> 'precio_base'::text))::numeric) / power('10'::numeric, round(log('10'::numeric, (((u.contenido ->> 'valor_total_adjudicacion'::text))::numeric / ((u.contenido ->> 'precio_base'::text))::numeric)), 0))) - '1'::numeric)) < 0.001))
+           ->  Unique  (cost=146941.85..146941.85 rows=1 width=1019)
+                 ->  Sort  (cost=146941.85..146941.85 rows=1 width=1019)
+                       Sort Key: ((crudo_registro.contenido ->> 'id_del_proceso'::text)), crudo_registro.consultado_en DESC
+                       ->  Gather  (cost=1000.00..146941.84 rows=1 width=1019)
+                             Workers Planned: 2
+                             ->  Parallel Seq Scan on crudo_registro  (cost=0.00..145941.74 rows=1 width=1019)
+                                   Filter: ((dataset = 'procesos'::text) AND ((contenido ->> 'precio_base'::text) ~ '^[0-9]+(\.[0-9]+)?$'::text) AND ((contenido ->> 'valor_total_adjudicacion'::text) ~ '^[0-9]+(\.[0-9]+)?$'::text) AND ((contenido ->> 'adjudicado'::text) = 'Si'::text) AND (((contenido ->> 'precio_base'::text))::numeric > '0'::numeric))
+   CTE m
+     ->  Hash Anti Join  (cost=36120.68..63174.96 rows=8306 width=106)
+           Hash Cond: (c.id_del_proceso = e.id_del_proceso)
+           ->  Gather  (cost=36120.65..63070.06 rows=8306 width=122)
+                 Workers Planned: 2
+                 ->  Parallel Hash Join  (cost=35120.65..61239.46 rows=3461 width=122)
+                       Hash Cond: (c.id_del_proceso = p.id_del_proceso)
+                       ->  Parallel Seq Scan on contrato c  (cost=0.00..25821.61 rows=113220 width=122)
+                             Filter: ((proveedor_tipo IS NOT NULL) AND (proveedor_provisional IS FALSE) AND (valor_fuera_de_escala IS NOT TRUE) AND (fecha_de_firma IS NOT NULL) AND (valor > '0'::numeric))
+                       ->  Parallel Hash  (cost=35044.85..35044.85 rows=6064 width=16)
+                             ->  Parallel Seq Scan on proceso p  (cost=0.00..35044.85 rows=6064 width=16)
+                                   Filter: (modalidad ~~* '%m_nima cuant_a%'::text)
+           ->  Hash  (cost=0.02..0.02 rows=1 width=32)
+                 ->  CTE Scan on errata e  (cost=0.00..0.02 rows=1 width=32)
+   CTE techo
+     ->  GroupAggregate  (cost=706.84..863.07 rows=1808 width=104)
+           Group Key: m.nit_entidad
+           ->  Sort  (cost=706.84..727.60 rows=8306 width=64)
+                 Sort Key: m.nit_entidad
+                 ->  CTE Scan on m  (cost=0.00..166.12 rows=8306 width=64)
+   CTE grupo
+     ->  GroupAggregate  (cost=769.13..1136.22 rows=5547 width=236)
+           Group Key: m_1.nit_entidad, m_1.proveedor_tipo, m_1.proveedor_numero, ((date_trunc('month'::text, (m_1.fecha_de_firma)::timestamp with time zone))::date)
+           ->  Sort  (cost=769.13..789.90 rows=8306 width=200)
+                 Sort Key: m_1.nit_entidad, m_1.proveedor_tipo, m_1.proveedor_numero, ((date_trunc('month'::text, (m_1.fecha_de_firma)::timestamp with time zone))::date), m_1.valor DESC
+                 ->  CTE Scan on m m_1  (cost=0.00..228.41 rows=8306 width=200)
+   InitPlan 5
+     ->  Aggregate  (cost=186.88..186.89 rows=1 width=8)
+           ->  CTE Scan on m m_2  (cost=0.00..166.12 rows=8306 width=0)
+   InitPlan 6
+     ->  Aggregate  (cost=40.68..40.69 rows=1 width=8)
+           ->  CTE Scan on techo  (cost=0.00..36.16 rows=1808 width=0)
+   InitPlan 7
+     ->  Aggregate  (cost=124.81..124.82 rows=1 width=8)
+           ->  CTE Scan on grupo  (cost=0.00..110.94 rows=5547 width=0)
+   InitPlan 8
+     ->  Aggregate  (cost=186.88..186.89 rows=1 width=4)
+           ->  CTE Scan on m m_3  (cost=0.00..166.12 rows=8306 width=4)
+   InitPlan 9
+     ->  Aggregate  (cost=186.88..186.89 rows=1 width=4)
+           ->  CTE Scan on m m_4  (cost=0.00..166.12 rows=8306 width=4)
+   InitPlan 11
+     ->  Aggregate  (cost=39198662.87..39198662.88 rows=1 width=32)
+           ->  Sort  (cost=39198579.30..39198621.08 rows=16715 width=308)
+                 Sort Key: grupo_1.suma DESC
+                 ->  Merge Join  (cost=21197.70..39195005.84 rows=16715 width=308)
+                       Merge Cond: (t.nit_entidad = grupo_1.nit_entidad)
+                       ->  CTE Scan on techo t  (cost=0.00..36.16 rows=1808 width=104)
+                       ->  Materialize  (cost=21197.70..39194719.05 rows=1849 width=236)
+                             ->  Nested Loop  (cost=21197.70..39194714.43 rows=1849 width=236)
+                                   ->  CTE Scan on grupo grupo_1  (cost=0.00..124.81 rows=1849 width=236)
+                                         Filter: (contratos > 1)
+                                   ->  Aggregate  (cost=21197.70..21197.71 rows=1 width=32)
+                                         ->  Sort  (cost=4.32..4.57 rows=100 width=32)
+                                               Sort Key: (((c_1.value ->> 'valor'::text))::numeric) DESC
+                                               ->  Function Scan on json_array_elements c_1  (cost=0.00..1.00 rows=100 width=32)
+                                         SubPlan 10
+                                           ->  Limit  (cost=0.42..211.91 rows=1 width=40)
+                                                 ->  Index Scan using crudo_registro_rellave_dataset_consultado_en_idx on crudo_registro r  (cost=0.42..346618.21 rows=1639 width=40)
+                                                       Index Cond: (dataset = 'contratos'::text)
+                                                       Filter: ((contenido ->> 'id_contrato'::text) = (c_1.value ->> 'id_contrato'::text))
+(72 filas)
+
+
+==============================================================
+  2 de 3 : UNA sola busqueda de enlace
+==============================================================
+                                                                                        QUERY PLAN                                                                                        
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.52..211.51 rows=1 width=40) (actual time=11123.630..11123.633 rows=1 loops=1)
+   Buffers: shared hit=640877 read=80106
+   InitPlan 1
+     ->  Limit  (cost=0.00..0.10 rows=1 width=18) (actual time=0.490..0.491 rows=1 loops=1)
+           Buffers: shared read=1
+           ->  Seq Scan on contrato  (cost=0.00..27136.85 rows=274485 width=18) (actual time=0.486..0.487 rows=1 loops=1)
+                 Buffers: shared read=1
+   ->  Index Scan using crudo_registro_rellave_dataset_consultado_en_idx on crudo_registro r  (cost=0.42..345798.60 rows=1639 width=40) (actual time=11123.624..11123.625 rows=1 loops=1)
+         Index Cond: (dataset = 'contratos'::text)
+         Filter: ((contenido ->> 'id_contrato'::text) = (InitPlan 1).col1)
+         Rows Removed by Filter: 174697
+         Buffers: shared hit=640877 read=80106
+ Planning:
+   Buffers: shared hit=300
+ Planning Time: 3.774 ms
+ Execution Time: 11124.005 ms
+(16 filas)
+
+
+==============================================================
+  3 de 3 : Que indices existen de verdad sobre crudo_registro
+==============================================================
+ indices_sobre_crudo_registro 
+------------------------------
+                            5
+(1 fila)
+
+                    indexname                     
+--------------------------------------------------
+ crudo_contrato_id_idx
+ crudo_proceso_id_consultado_idx
+ crudo_proceso_id_idx
+ crudo_registro_rellave_dataset_consultado_en_idx
+ crudo_registro_rellave_pkey
+(5 filas)
+

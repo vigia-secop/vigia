@@ -1,0 +1,8 @@
+{"generado_en" : "2026-09-06T17:48:16.445215+00:00", "periodo" : {"desde" : "2026-08-24", "hasta" : "2026-08-30"}, "anterior" : {"desde" : "2026-08-17", "hasta" : "2026-08-23"}, "actual" : {"contratos" : 13, "valor" : 27009500000, "entidades" : 0, "proveedores" : 7, "uniones" : 0, "valor_uniones" : 0, "huerfanos" : 0, "nacional" : 0, "territorial" : 0, "car" : 0, "valor_nacional" : 0, "valor_territorial" : 0}, "anterior_cifras" : {"contratos" : 0, "valor" : 0, "entidades" : 0, "proveedores" : 0, "uniones" : 0, "valor_uniones" : 0, "huerfanos" : 0, "nacional" : 0, "territorial" : 0, "car" : 0, "valor_nacional" : 0, "valor_territorial" : 0}, "departamentos" : [{"nombre":"SIN DEPARTAMENTO","codigo":"--","contratos":13,"valor":27009500000}], "proveedores" : [{"nombre":"BAVARIA S.A.","numero":"860000189","contratos":2,"valor":4000000,"entidades":0}, 
+ {"nombre":"CONSTRUCTORA ANDINA S.A.S.","numero":"900123456","contratos":2,"valor":2000000,"entidades":0}, 
+ {"nombre":"CONSTRUCTORA ANDINA SAS","numero":"900123456","contratos":1,"valor":1000000,"entidades":0}, 
+ {"nombre":"PERSONA 0","numero":"79123450","contratos":1,"valor":500000,"entidades":0}, 
+ {"nombre":"PERSONA 1","numero":"79123451","contratos":1,"valor":500000,"entidades":0}, 
+ {"nombre":"PERSONA 2","numero":"79123452","contratos":1,"valor":500000,"entidades":0}, 
+ {"nombre":"PERSONA 3","numero":"79123453","contratos":1,"valor":500000,"entidades":0}, 
+ {"nombre":"PERSONA 4","numero":"79123454","contratos":1,"valor":500000,"entidades":0}], "uniones" : null}

@@ -159,6 +159,35 @@ def construir(datos: dict, *, periodo: str = "semana", enlace: str = "") -> list
         f"· {numero(c['sin_departamento'])} sin departamento"
     )
 
+    # 3b. LAS ERRATAS DE TECLEO, Y POR QUÉ ESTE POST ES EL QUE MÁS IMPORTA.
+    #
+    # Un contrato cuyo valor es EXACTAMENTE mil o diez mil veces el presupuesto
+    # de su propio proceso no es un sobrecosto: es una tecla de más.
+    #
+    # Hasta el 2026-09-16 `boletin.sql` no las mencionaba, y este hilo se
+    # publica en X. Probado contra el fixture: en una semana con cuatro de
+    # ellas, el total habría salido **$823,5 mil millones en vez de $6,8 mil
+    # millones**. Ciento veinte veces. Y un post no se puede retirar.
+    #
+    # Ahora están fuera de todas las cifras del hilo. Este post existe para
+    # decir que se apartaron: apartar sin decirlo es esconder, y el número que
+    # se enseña —lo que sumarían— es justo el tamaño del error evitado.
+    #
+    # Va solo si hay alguna. Un post permanente que casi siempre dice cero
+    # deja de leerse el día que deja de decirlo.
+    erratas = int(c.get("erratas") or 0)
+    if erratas:
+        plural = "" if erratas == 1 else "s"
+        posts.append(
+            f"Y {numero(erratas)} contrato{plural} quedaron FUERA de todo lo "
+            "anterior.\n\n"
+            "Su valor es exactamente mil o diez mil veces el presupuesto "
+            "oficial de su propio proceso: una tecla de más, no un "
+            "sobrecosto.\n\n"
+            f"Sumaban {compacto(c.get('valor_erratas'))}. Ese habría sido el "
+            "tamaño del error."
+        )
+
     # 4. Geografía.
     deps = (datos.get("departamentos") or [])[:5]
     if deps:

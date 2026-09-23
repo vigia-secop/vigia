@@ -44,11 +44,15 @@ SELECT json_build_object(
              c.nombre_entidad AS entidad, c.nit_entidad,
              c.valor, c.estado, c.fecha_de_firma,
              c.departamento_nombre AS departamento,
-             (SELECT r.contenido->'urlproceso'->>'url'
+             -- SIN `LIMIT 1`, y aqui es donde mas se notaba: esta lista trae
+             -- unas 53 filas, y a 14 segundos cada enlace eran doce minutos
+             -- de los diecisiete que tardaba la pagina entera. Ver la
+             -- explicacion en `banderas.sql`. Medido el 2026-09-20.
+             (SELECT (array_agg(r.contenido->'urlproceso'->>'url'
+                                ORDER BY r.consultado_en DESC))[1]
               FROM crudo_registro r
               WHERE r.dataset = 'contratos'
-                AND r.contenido->>'id_contrato' = c.id_contrato
-              ORDER BY r.consultado_en DESC LIMIT 1)          AS enlace
+                AND r.contenido->>'id_contrato' = c.id_contrato) AS enlace
       FROM contrato c
       WHERE c.proveedor_tipo IS NOT NULL
         AND upper(coalesce(c.proveedor_nombre,'')) IN
@@ -131,11 +135,12 @@ SELECT json_build_object(
              c.departamento_nombre AS departamento,
              s.base                                          AS valor_probable,
              s.ceros                                         AS ceros_de_mas,
-             (SELECT r.contenido->'urlproceso'->>'url'
+             -- SIN `LIMIT 1`, a proposito: ver `banderas.sql`.
+             (SELECT (array_agg(r.contenido->'urlproceso'->>'url'
+                                ORDER BY r.consultado_en DESC))[1]
               FROM crudo_registro r
               WHERE r.dataset = 'contratos'
-                AND r.contenido->>'id_contrato' = c.id_contrato
-              ORDER BY r.consultado_en DESC LIMIT 1)         AS enlace
+                AND r.contenido->>'id_contrato' = c.id_contrato) AS enlace
       FROM contrato c
       JOIN (
         SELECT id_del_proceso, base, round(log(razon)) AS ceros

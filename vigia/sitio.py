@@ -30,6 +30,7 @@ import sys
 from datetime import date, timedelta
 from pathlib import Path
 
+from vigia import estilo
 from vigia.calendario import dias_habiles
 from vigia.marca import TINTA, ojo
 from vigia.panel import compacto, e, numero, pesos, titulo_es
@@ -117,6 +118,50 @@ def _resumen_meta(a, hab, desde, hasta) -> str:
         f'{numero(a["entidades"])} entidades, {numero(a["proveedores"])} contratistas.'
     )
     return texto[:200]
+
+
+def _erratas(c: dict) -> str:
+    """Los contratos apartados por tener un cero de mas, y cuanto sumaban.
+
+    **Solo aparece cuando hay alguno.** Un aviso permanente que casi siempre
+    dice cero se vuelve decorado y deja de leerse el dia que importa.
+
+    Hasta el 2026-09-16 esta pagina —y el hilo que la acompana— sumaba las
+    erratas de tecleo sin marcarlas siquiera. Probado contra el fixture: una
+    semana con cuatro de ellas habria publicado $823,5 mil millones en vez de
+    $6,8 mil millones. Ciento veinte veces.
+
+    Ahora estan fuera de todas las cifras de la pagina, y este parrafo existe
+    para decirlo. Apartar sin decirlo es esconder; la cifra que se ensena es
+    la que sumarian, o sea el tamano exacto del error que se evito.
+
+    **AQUI NO VAN LOS NOMBRES, Y NO ES UN OLVIDO.** `boletin.sql` -la consulta
+    que alimenta esta pagina y el hilo de X- tiene prohibido devolver el
+    nombre de nadie, y esa prohibicion es la unica garantia que no depende de
+    que alguien se acuerde. Romperla para listar cuatro erratas seria cambiar
+    una garantia estructural por una comodidad.
+
+    Asi que se enlaza el Panel, que si los publica uno por uno con las dos
+    cifras y la ficha del SECOP. El dato sale igual; la garantia se queda.
+    """
+    cuantas = int(c.get("erratas") or 0)
+    if not cuantas:
+        return ""
+    plural = "" if cuantas == 1 else "s"
+    return (
+        '<p class="alcance-errata" style="margin:14px 0 0">'
+        f"<strong>{numero(cuantas)} contrato{plural} quedaron fuera de todas "
+        "las cifras de esta página.</strong> Su valor adjudicado es "
+        "<strong>exactamente</strong> mil o diez mil veces el presupuesto "
+        "oficial de su propio proceso: la firma de una tecla de más, no la de "
+        f"un sobrecosto. Sumaban {compacto(c.get('valor_erratas'))} tal como "
+        "la fuente los publica — ese habría sido el tamaño del error.</p>"
+        '<p class="alcance-errata" style="margin:6px 0 0">Apartarlos no es '
+        "taparlos: un valor que no cuadra con el presupuesto de su propio "
+        "proceso vale la pena mirarlo. Salen uno por uno, con las dos cifras "
+        'y el enlace a la ficha oficial, en el <a href="panel.html">Panel</a>. '
+        "Vigía no corrige la fuente ni adivina el valor verdadero.</p>"
+    )
 
 
 def construir(datos: dict, *, periodo: str = "semana", archivo: list | None = None) -> str:
@@ -260,6 +305,7 @@ footer {{ margin-top:52px; padding-top:18px; border-top:1px solid var(--borde);
   .barras li {{ grid-template-columns:1fr auto; }}
   .bar {{ display:none; }}
 }}
+{estilo.NAV_CSS}
 </style>
 </head>
 <body>
@@ -270,6 +316,7 @@ footer {{ margin-top:52px; padding-top:18px; border-top:1px solid var(--borde);
     <p class="lema">{LEMA}</p>
     <p class="per">{_dia_mes(d_desde)} al {_dia_mes(d_hasta)} de {d_hasta.year}
       · {hab_a} días hábiles · datos al {generado}</p>
+    {estilo.menu("semana.html")}
   </header>
 
   <div class="cifras">
@@ -317,6 +364,7 @@ footer {{ margin-top:52px; padding-top:18px; border-top:1px solid var(--borde);
         ({pct(c["sin_departamento"], total_cob)}) sin departamento declarado.</li>
       <li><strong>{numero(c["sin_valor"])} contratos</strong> sin valor.</li>
     </ul>
+    {_erratas(c)}
   </div>
 
   <h2>Dónde se firmó</h2>
@@ -351,6 +399,10 @@ footer {{ margin-top:52px; padding-top:18px; border-top:1px solid var(--borde);
   <p class="sub">Las mismas cifras, contrato por contrato.</p>
   <div class="tarjeta">
     <ul class="archivo">
+      <li><a href="archivo.html"><strong>El archivo</strong></a> — el mismo
+        dato día por día, semana por semana y mes por mes, desde que hay
+        historia. Va de primero porque es la pregunta que más se hace: «¿y
+        cómo fue tal día?».</li>
       <li><a href="panel.html"><strong>Panel</strong></a> — entidades,
         contratistas, departamentos y modalidades, con el alcance de cada
         medición declarado antes que cualquier ranking.</li>

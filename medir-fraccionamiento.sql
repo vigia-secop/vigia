@@ -34,10 +34,37 @@
 \pset border 2
 \pset numericlocale on
 
+-- LAS ERRATAS ×10ⁿ, FUERA. Es la regla del resto del proyecto y aquí hace
+-- todavía más falta: el techo de una entidad es el MÁXIMO de sus mínimas
+-- cuantías, así que una sola errata de tecleo le regala a esa entidad un
+-- techo inalcanzable y **la vuelve invisible para esta medición**. No es una
+-- bandera más débil: es un punto ciego.
+CREATE TEMP TABLE errata AS
+SELECT id_del_proceso
+FROM (
+  SELECT contenido->>'id_del_proceso'                       AS id_del_proceso,
+         (contenido->>'valor_total_adjudicacion')::numeric
+           / (contenido->>'precio_base')::numeric           AS razon
+  FROM (
+    SELECT DISTINCT ON (contenido->>'id_del_proceso') contenido
+    FROM crudo_registro
+    WHERE dataset = 'procesos'
+      AND contenido->>'adjudicado' = 'Si'
+      AND contenido->>'precio_base' ~ '^[0-9]+(\.[0-9]+)?$'
+      AND contenido->>'valor_total_adjudicacion' ~ '^[0-9]+(\.[0-9]+)?$'
+      AND (contenido->>'precio_base')::numeric > 0
+    ORDER BY contenido->>'id_del_proceso', consultado_en DESC
+  ) u
+) z
+WHERE razon >= 100
+  AND abs(razon / power(10::numeric, round(log(razon))) - 1) < 0.001;
+
+CREATE INDEX ON errata (id_del_proceso);
+
 -- Contratos de mínima cuantía con identidad de proveedor real y valor útil.
 -- La modalidad vive en `proceso`, así que solo entran los que cruzaron.
 CREATE TEMP TABLE m AS
-SELECT c.id_contrato, c.nit_entidad, c.nombre_entidad,
+SELECT c.id_contrato, c.id_del_proceso, c.nit_entidad, c.nombre_entidad,
        c.proveedor_tipo, c.proveedor_numero,
        c.fecha_de_firma, c.valor
 FROM contrato c
@@ -47,7 +74,10 @@ WHERE p.modalidad ILIKE '%m_nima cuant_a%'
   AND c.proveedor_provisional IS FALSE
   AND c.valor_fuera_de_escala IS NOT TRUE
   AND c.valor > 0
-  AND c.fecha_de_firma IS NOT NULL;
+  AND c.fecha_de_firma IS NOT NULL
+  AND NOT EXISTS (
+    SELECT 1 FROM errata e WHERE e.id_del_proceso = c.id_del_proceso
+  );
 
 -- 0. SOBRE CUÁNTO ESTAMOS HABLANDO. Si las mínimas cuantías que cruzaron con
 --    su proceso son una fracción pequeña de las que hay, esta medición no
@@ -99,6 +129,44 @@ SELECT count(*)                                          AS entidades,
        max(tope)::numeric(24,0)                          AS tope_mayor
 FROM techo WHERE minimas >= 5;
 
+-- 2b. LOS TECHOS QUE NO PUEDEN SER, Y CUÁNTAS ENTIDADES CIEGAN.
+--
+--     En la primera corrida (2026-09-19) el techo mayor del país salió en
+--     **$44.118.060.000**. Una mínima cuantía de cuarenta y cuatro mil
+--     millones no existe: o la modalidad está mal puesta en la fuente, o es
+--     una errata de tecleo que el filtro de arriba no atrapó.
+--
+--     LA PRUEBA NO USA NINGÚN NÚMERO DE LA LEY, a propósito — ese es el
+--     principio de este archivo entero. Se compara cada entidad **consigo
+--     misma**: si su contrato más caro es veinte veces su propio percentil 95,
+--     ese contrato es un forastero dentro de su propia conducta. Esa es la
+--     forma de un dato mal puesto, no la de una compra grande.
+--
+--     Importa contarlas, no solo verlas: cada entidad con un techo imposible
+--     es una entidad donde esta medición NO PUEDE encontrar fraccionamiento
+--     aunque lo haya. Es la cobertura de la bandera, y va declarada.
+SELECT count(*)                                   AS entidades_cegadas,
+       sum(minimas)                               AS minimas_que_no_se_pueden_mirar
+FROM techo
+WHERE minimas >= 5 AND p95 > 0 AND tope / p95 >= 20;
+
+WITH sospechosos AS (
+    SELECT t.nit_entidad, t.tope, t.p95, t.minimas,
+           round(t.tope / nullif(t.p95, 0), 0) AS veces_su_propio_p95
+    FROM techo t
+    WHERE t.minimas >= 5 AND t.p95 > 0 AND t.tope / t.p95 >= 20
+)
+SELECT left(max(m.nombre_entidad), 34) AS entidad,
+       s.minimas,
+       s.tope::numeric(24,0)           AS techo_declarado,
+       s.p95::numeric(24,0)            AS su_propio_p95,
+       s.veces_su_propio_p95           AS veces,
+       max(m.id_contrato)              AS un_contrato_del_techo
+FROM sospechosos s
+JOIN m ON m.nit_entidad = s.nit_entidad AND m.valor = s.tope
+GROUP BY s.nit_entidad, s.minimas, s.tope, s.p95, s.veces_su_propio_p95
+ORDER BY s.tope DESC LIMIT 15;
+
 -- 3. LOS CANDIDATOS: grupos cuya SUMA pasa el techo de su propia entidad.
 --    Solo se miran entidades con al menos cinco mínimas cuantías, porque con
 --    dos el «techo» es el único contrato que hay y no significa nada — es la
@@ -143,4 +211,4 @@ SELECT left(entidad, 38) AS entidad, proveedor_numero AS proveedor,
        round(veces, 1) AS veces
 FROM c ORDER BY suma DESC LIMIT 20;
 
-DROP TABLE m; DROP TABLE g; DROP TABLE techo;
+DROP TABLE m; DROP TABLE g; DROP TABLE techo; DROP TABLE errata;

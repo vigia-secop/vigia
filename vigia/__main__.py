@@ -44,10 +44,42 @@ from vigia.schema.validacion import EsquemaCambiado, ValidadorDeEsquema
 CODIGO_USO = 2
 CODIGO_FALLO = 1
 
-#: Días de solapamiento por defecto. El SECOP publica con retraso; treinta días
-#: cubren el retraso observado con margen. Es configuración, no una constante
-#: del dominio: la señal `en_borde_de_ventana` del Ciclo dice si se queda corta.
-VENTANA_DIAS_POR_DEFECTO = 30
+#: Días de solapamiento por defecto. Cada ingesta relee esos días hacia atrás
+#: desde la marca de agua, por dos razones distintas:
+#:
+#:   1. El SECOP publica tarde. Un contrato que aparece después de que la
+#:      ventana pasó por su fecha no se baja nunca, y no deja hueco: deja nada.
+#:   2. El SECOP MODIFICA lo que ya publicó —adiciones, cambios de estado,
+#:      erratas corregidas—. Una modificación a un contrato más viejo que la
+#:      ventana no se ve nunca: nos quedamos con la versión vieja.
+#:
+#: LA HISTORIA DE ESTE NÚMERO, PORQUE LA PRIMERA RAZÓN QUE DI ESTABA MAL.
+#: Era 30. El 2026-09-19 la alarma VENTANA CORTA dijo 399 «registros nuevos»
+#: de procesos en el día del borde, y lo subí a 45 creyendo que se estaban
+#: perdiendo contratos (razón 1). Con 45, el 2026-09-20 la alarma dijo 1.506
+#: en el borde nuevo. Medido entonces uno por uno contra la primera vez que
+#: habíamos visto cada contrato (`medir-retraso.sql`, bloque 1):
+#:
+#:     edad al entrar     nuevos de verdad    ya estaban y cambiaron
+#:     hasta 30 días            6.097                  5.324
+#:     de 31 a 45                   0                  7.617
+#:     más de 45                    0                  1.506
+#:
+#: CERO contratos nuevos con más de 30 días. La ventana de 30 no perdía
+#: contratos: la alarma contaba como «nuevos» los que ya teníamos y habían
+#: cambiado. Eso se corrigió en la alarma misma (`cambiados_en_borde`).
+#:
+#: POR QUÉ SIGUE EN 45 DE TODAS FORMAS: por la razón 2. Esos 9.123 contratos
+#: de 31 a 46 días que el SECOP modificó —7.617 + 1.506, en un solo día— con
+#: 30 no se habrían visto nunca en su versión nueva. Para un proyecto que
+#: vigila lo que se publica, que una cifra cambie es de lo que más importa ver:
+#: así se descubrió que el SECOP corrigió cuatro erratas ×10ⁿ.
+#:
+#: EL PRECIO, medido el mismo día: la ingesta de contratos pasó de 100 a 145
+#: páginas y de 6 a 16 minutos. Parte de eso fue ponerse al día la primera
+#: vez; en régimen quedará alrededor de un 50 % más que con 30. Es una
+#: decisión, no un dato: se cambia con `--ventana-dias` o `VIGIA_VENTANA_DIAS`.
+VENTANA_DIAS_POR_DEFECTO = 45
 
 
 
@@ -305,9 +337,27 @@ def _describir(registro: RegistroDeCiclo) -> str:
     ]
     if registro.ventana_corta:
         lineas.append(
-            f"VENTANA CORTA: {registro.en_borde_de_ventana} registro(s) nuevo(s) con "
-            f"fecha de hecho en {registro.desde.isoformat()}, el día más viejo de la "
-            "ventana. Ensánchala con --ventana-dias antes de perder algo."
+            f"VENTANA CORTA: {registro.en_borde_de_ventana} registro(s) NUNCA VISTO(S) "
+            f"con fecha de hecho en {registro.desde.isoformat()}, el día más viejo de "
+            "la ventana. Ensánchala con --ventana-dias antes de perder algo."
+        )
+    if registro.fuente_cambio_todo:
+        repetido = 100 * registro.duplicados / registro.vistos if registro.vistos else 0
+        lineas.append(
+            f"LA FUENTE CAMBIÓ TODO: de {registro.vistos} registro(s) leído(s), "
+            f"solo {registro.duplicados} ({repetido:.1f} %) coinciden con lo que ya "
+            "teníamos; un día normal repite más del 80 %. Suele ser un cambio de "
+            "formato de la fuente —el 2026-09-22 los campos de plata pasaron de «0» "
+            "a «0.000000»— y entonces solo cuesta espacio. Compruébalo con "
+            "EJECUTAR-VERIFICAR-FORMATO.bat antes de creerle a las cifras del sitio."
+        )
+    if registro.desde_derivado and registro.cambiados_en_borde:
+        # No es alarma y no se escribe como tal. Antes salía mezclado dentro
+        # de VENTANA CORTA y hacía creer que se estaban perdiendo registros.
+        lineas.append(
+            f"En el borde ({registro.desde.isoformat()}): "
+            f"{registro.cambiados_en_borde} registro(s) que ya teníamos y la fuente "
+            "modificó. No se perdía nada: es la versión nueva de algo que ya estaba."
         )
     if registro.recuperados_por_solapamiento:
         lineas.append(

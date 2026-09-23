@@ -19,6 +19,16 @@ ON CONFLICT (dataset, id_fila_fuente, hash_contenido) DO NOTHING
 RETURNING id_fila_fuente, hash_contenido
 """
 
+# Qué identidades de la página ya existían en CUALQUIER versión. Va por la
+# clave primaria (dataset, id_fila_fuente, hash_contenido), cuyo prefijo es
+# justo lo que se pregunta: una búsqueda por índice por página de mil, no un
+# recorrido. Se consulta ANTES de insertar y en la misma transacción, para que
+# lo que esta página mete no se cuente a sí mismo como «ya estaba».
+_YA_EXISTIAN = """
+SELECT DISTINCT id_fila_fuente FROM crudo_registro
+WHERE dataset = %s AND id_fila_fuente = ANY(%s)
+"""
+
 
 class RepositorioPostgres:
     """Almacén de la capa cruda respaldado por PostgreSQL.
@@ -51,6 +61,12 @@ class RepositorioPostgres:
             # queda confirmado por sí solo. Que una página posterior falle no
             # deshace las anteriores.
             with self._conexion.transaction(), self._conexion.cursor() as cursor:
+                cursor.execute(
+                    _YA_EXISTIAN,
+                    (registros[0].dataset,
+                     list({registro.id_fila_fuente for registro in registros})),
+                )
+                ya_existian = {fila[0] for fila in cursor.fetchall()}
                 # `returning=True` deja recorrer el resultado de cada sentencia:
                 # el motor dice exactamente cuáles entraron, que es más preciso
                 # que `rowcount` y es lo que el Ciclo necesita para su señal de
@@ -77,6 +93,9 @@ class RepositorioPostgres:
             insertados=insertados,
             duplicados=len(registros) - insertados,
             insertadas=frozenset(insertadas),
+            ids_nuevos=frozenset(
+                id_fila for id_fila, _ in insertadas if id_fila not in ya_existian
+            ),
         )
 
 

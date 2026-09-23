@@ -157,33 +157,81 @@ class TestUnDiaSinJornadaSeExplica:
         assert "sin comparación válida" in pagina or "%" in pagina
 
 
-class TestLaErrataSeMarcaNoSeEsconde:
-    def test_la_fila_sigue_en_la_tabla(self):
-        assert "CO1.PCCNTR.9762242" in _con(mayores=[TIPACOQUE])
+class TestLaErrataSeApartaYSeDice:
+    """La errata de tecleo ya no llega a la tabla del día.
 
-    def test_lleva_la_marca_con_el_presupuesto_del_proceso(self):
-        pagina = _con(mayores=[TIPACOQUE])
-        assert "probable errata" in pagina
-        assert "$431,3 millones" in pagina
+    Hasta el 2026-09-16 se quedaba ahí con una etiqueta al lado y —lo que de
+    verdad importaba— seguía dentro de las cifras del día. Con el contrato de
+    Tipacoque adentro, «lo que se contrató hoy» pasaba de $790,4 millones a
+    $432.130 millones: **547 veces**. La página no fallaba; salía, se leía, y
+    estaba mal.
 
-    def test_el_aviso_de_arriba_usa_singular_con_uno_solo(self):
-        pagina = _con(mayores=[TIPACOQUE],
-                      calidad=dict(MINIMO["calidad"], erratas_hoy=1))
+    Una marca al lado de una fila no le quita el peso a un total. Ahora
+    `portada.sql` las aparta, y el aviso dice cuántas apartó y cuánto sumaban:
+    apartar sin decirlo sería esconder, y la cifra que se enseña es el tamaño
+    exacto del error que se evitó.
+    """
+
+    def test_el_aviso_dice_cuanto_se_aparto(self):
+        pagina = _con(calidad=dict(MINIMO["calidad"], erratas_hoy=1,
+                                   valor_erratas_hoy=431340000000))
+        assert "tecla de más" in pagina
+        assert "$431,3 mil millones" in pagina
+
+    def test_el_aviso_dice_que_estan_fuera_de_las_cifras(self):
+        # Sin esta frase el lector no sabe si el total de arriba las incluye.
+        pagina = _con(calidad=dict(MINIMO["calidad"], erratas_hoy=1,
+                                   valor_erratas_hoy=431340000000))
+        assert "fuera de todas las cifras de esta página" in pagina
+
+    def test_el_aviso_usa_singular_con_una_sola(self):
+        pagina = _con(calidad=dict(MINIMO["calidad"], erratas_hoy=1,
+                                   valor_erratas_hoy=431340000000))
         assert "Un contrato de hoy tiene" in pagina
         assert "contrato(s)" not in pagina
 
     def test_sin_erratas_no_sale_el_aviso(self):
-        assert "tecla de más" not in _con(mayores=[TIPACOQUE])
+        # Un aviso permanente que casi siempre dice cero deja de leerse.
+        assert "tecla de más" not in _con()
 
-    def test_un_contrato_grande_normal_no_lleva_marca(self):
-        # Se busca la marca de la FILA, no el texto suelto: el bloque de
-        # calidad del dato nombra las erratas siempre, aunque sean cero, y
-        # buscar la frase a secas daría una prueba que nunca falla.
-        limpio = dict(TIPACOQUE, errata_probable=False, valor_probable=None)
-        assert 'class="marca-fila errata"' not in _con(mayores=[limpio])
+    def test_no_queda_ninguna_marca_de_errata_en_la_tabla(self):
+        # La marca de fila desapareció con la fila. Si vuelve a aparecer es
+        # que alguien volvió a dejar entrar la errata a la tabla.
+        pagina = _con(calidad=dict(MINIMO["calidad"], erratas_hoy=1,
+                                   valor_erratas_hoy=431340000000))
+        assert 'class="marca-fila errata"' not in pagina
 
-    def test_la_errata_si_lleva_la_marca_de_fila(self):
-        assert 'class="marca-fila errata"' in _con(mayores=[TIPACOQUE])
+    def test_las_erratas_se_publican_aparte_con_las_dos_cifras(self):
+        # LA PRUEBA QUE IMPIDE QUE APARTAR SE VUELVA TAPAR. Sacarlas de las
+        # cifras evita publicar un total que no se sostiene; no publicarlas
+        # seria esconder algo que puede estar mal.
+        pagina = _con(
+            calidad=dict(MINIMO["calidad"], erratas_hoy=1,
+                         valor_erratas_hoy=431340000000),
+            erratas=[{
+                "id_contrato": "CO1.PCCNTR.9762242",
+                "proveedor": "FUNDACION MIL COLORES MAS",
+                "entidad": "ALCALDÍA MUNICIPAL DE TIPACOQUE",
+                "valor": 431340000000,
+                "presupuesto_del_proceso": 431340000,
+                "veces": 1000,
+                "enlace": "https://community.secop.gov.co/CO1.PCCNTR.9762242",
+            }])
+        assert "FUNDACION MIL COLORES MAS" in pagina
+        assert "$431,3 mil millones" in pagina    # lo publicado
+        assert "$431,3 millones" in pagina        # el presupuesto
+        assert "community.secop.gov.co/CO1.PCCNTR.9762242" in pagina
+
+    def test_sin_lista_el_aviso_sigue_saliendo_solo(self):
+        # Un JSON viejo, de antes de que existiera la lista, no puede dejar
+        # la pagina sin el aviso: se queda sin tabla, no sin advertencia.
+        pagina = _con(calidad=dict(MINIMO["calidad"], erratas_hoy=1,
+                                   valor_erratas_hoy=431340000000))
+        assert "tecla de más" in pagina
+
+    def test_los_contratos_grandes_de_verdad_siguen_saliendo(self):
+        # La prueba que impide que apartar se convierta en podar.
+        assert "CO1.PCCNTR.9762242" in _con(mayores=[TIPACOQUE])
 
 
 class TestLaCoberturaVaAntesQueElRanking:

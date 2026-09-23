@@ -64,6 +64,9 @@ class RegistroDeCiclo:
     duplicados: int = 0
     recuperados_por_solapamiento: int = 0
     en_borde_de_ventana: int = 0
+    #: Ya los teníamos y cambiaron, en el día del borde. No es alarma: ver
+    #: `ResumenCiclo.cambiados_en_borde`.
+    cambiados_en_borde: int = 0
     sin_fecha_de_hecho: int = 0
     #: Reservado para la historia 1.4; el Ciclo todavía no sabe de huérfanos.
     huerfanos: int | None = None
@@ -93,6 +96,7 @@ class RegistroDeCiclo:
             "duplicados": self.duplicados,
             "recuperados_por_solapamiento": self.recuperados_por_solapamiento,
             "en_borde_de_ventana": self.en_borde_de_ventana,
+            "cambiados_en_borde": self.cambiados_en_borde,
             "sin_fecha_de_hecho": self.sin_fecha_de_hecho,
         }
         negativos = sorted(nombre for nombre, valor in conteos.items() if valor < 0)
@@ -117,13 +121,46 @@ class RegistroDeCiclo:
 
     @property
     def ventana_corta(self) -> bool:
-        """Siguen entrando registros nuevos por el extremo viejo de la ventana.
+        """Siguen entrando registros NUNCA VISTOS por el extremo viejo.
+
+        Solo los nunca vistos: un registro que ya teníamos y que cambió no se
+        pierde con una ventana corta, solo se ve tarde su versión nueva. El
+        2026-09-20 esta alarma encendió con 1.506 y los 1.506 eran de esos.
 
         Solo aplica cuando `desde` se derivó de la marca: en un histórico
         pedido a mano, que haya registros nuevos en el primer día del rango es
         lo normal, no una alarma.
         """
         return self.desde_derivado and self.en_borde_de_ventana > 0
+
+    #: Por debajo de esto no se juzga: en una corrida chica —un rango de un
+    #: día, una prueba— que no se repita nada es normal.
+    MINIMO_PARA_JUZGAR_REPETICION = 1000
+
+    #: Un Ciclo diario normal repite casi todo: la ventana vuelve a leer lo de
+    #: los días anteriores. El 2026-09-20 fueron 124.345 duplicados de 144.889
+    #: (85,8 %). Por debajo de este 10 % ya no es «la fuente actualizó cosas»,
+    #: es «la fuente devolvió otra cosa».
+    UMBRAL_REPETICION = 0.10
+
+    @property
+    def fuente_cambio_todo(self) -> bool:
+        """Casi nada de lo que llegó coincide con lo que ya estaba guardado.
+
+        Pasó el 2026-09-22: 139.172 contratos vistos, 139.172 insertados, cero
+        duplicados. No había ni un campo nuevo que avisara. La causa fue un
+        cambio de formato de la fuente —los campos de plata pasaron de «0» a
+        «0.000000»—, que le cambia el hash a TODOS los registros y mete una
+        versión nueva de la base entera en un solo día.
+
+        No es un error: el dato guardado sigue siendo el que llegó. Pero tiene
+        que verse, porque cuesta espacio y porque la otra explicación posible
+        —que la fuente haya cambiado las cifras de escala— sí rompería las
+        cuentas del sitio, y en silencio.
+        """
+        if not self.completo or self.vistos < self.MINIMO_PARA_JUZGAR_REPETICION:
+            return False
+        return self.duplicados / self.vistos < self.UMBRAL_REPETICION
 
 
 class RepositorioEstado(Protocol):

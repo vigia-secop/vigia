@@ -136,3 +136,61 @@ footer { margin-top:52px; padding-top:18px; border-top:1px solid var(--borde);
 }
 @media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
 """
+
+
+# ---------------------------------------------------------------------------
+# LA CABECERA COMPARTIDA: LA MARCA PRIMERO Y EL MENÚ ARRIBA
+# ---------------------------------------------------------------------------
+# El 2026-09-19, abriendo `archivo.html` en un teléfono, lo primero que se leía
+# era «El archivo». Ni una vez la palabra Vigía. Quien llega por un enlace que
+# le mandaron no entra por la portada: entra por donde lo mandaron, y si esa
+# página no dice de quién es, la cifra que lea no es de nadie.
+#
+# Y el menú estaba **al final**. Para pasar del archivo al panel había que
+# recorrer la página entera hasta abajo. Eso convierte cinco páginas en cinco
+# callejones sin salida, que es lo contrario de un sitio.
+#
+# Así que las dos cosas van arriba y en un solo sitio: la marca, el lema y el
+# menú. El nombre propio de cada página baja a ser un subtítulo, que es lo que
+# siempre fue.
+#
+# LA PÁGINA EN LA QUE SE ESTÁ NO SE ENLAZA A SÍ MISMA. Va marcada con
+# `aria-current` y sin `href`: un enlace que no lleva a ninguna parte se prueba
+# una vez y enseña que el menú no es de fiar.
+
+#: Las páginas públicas, en el orden en que tienen sentido: hoy, la historia,
+#: el período cerrado, el detalle completo, y al final lo que hay que mirar.
+PAGINAS = [
+    ("index.html", "Hoy"),
+    ("archivo.html", "El archivo"),
+    ("semana.html", "El período"),
+    ("panel.html", "Panel"),
+    ("banderas.html", "Banderas"),
+    ("revision.html", "Qué mirar primero"),
+]
+
+NAV_CSS = """
+.navsitio { display:flex; flex-wrap:wrap; gap:7px; margin-top:16px; }
+.navsitio a, .navsitio span { font-size:13.5px; padding:7px 13px; border-radius:999px;
+  text-decoration:none; border:1px solid var(--borde); background:var(--superficie);
+  color:var(--tinta-2); transition:border-color .15s ease, color .15s ease; }
+.navsitio a:hover { border-color:var(--acento); color:var(--tinta); }
+.navsitio a:focus-visible { outline:2px solid var(--acento); outline-offset:2px; }
+.navsitio [aria-current="page"] { background:var(--tinta); border-color:var(--tinta);
+  color:var(--papel); font-weight:600; }
+.pagina { margin:34px 0 2px; font-size:24px; letter-spacing:-.02em; }
+.pagina + .sub { margin:0 0 4px; color:var(--tinta-2); font-family:"Source Serif 4",Georgia,serif;
+  font-size:17px; }
+"""
+
+
+def menu(activa: str) -> str:
+    """El menú del sitio. `activa` es el nombre de archivo de esta página."""
+    trozos = []
+    for archivo, etiqueta in PAGINAS:
+        if archivo == activa:
+            trozos.append(f'<span aria-current="page">{etiqueta}</span>')
+        else:
+            trozos.append(f'<a href="{archivo}">{etiqueta}</a>')
+    return ('<nav class="navsitio" aria-label="Secciones de Vigía">'
+            + "".join(trozos) + "</nav>")

@@ -291,6 +291,67 @@ def test_un_duplicado_en_el_borde_no_enciende_la_alarma(crear_cliente):
     assert not segundo.ventana_corta
 
 
+def test_un_registro_que_ya_teniamos_y_cambio_no_enciende_la_alarma(crear_cliente):
+    """El caso del 2026-09-20, reducido a un contrato.
+
+    La alarma dijo 1.506 «registros nuevos» en el borde y se leyó como «la
+    ventana está perdiendo contratos». Medidos uno por uno, los 1.506 eran
+    contratos que ya teníamos y que el SECOP había modificado: otra versión,
+    misma identidad. Eso no se pierde con una ventana corta —solo se ve tarde
+    la versión nueva— y no puede encender VENTANA CORTA.
+
+    Pero tampoco se tira: se cuenta aparte, porque dice cuántas modificaciones
+    se habrían dejado de ver con una ventana más corta.
+    """
+    estado = RepositorioEstadoEnMemoria()
+    estado.fijar_marca("contratos", date(2026, 8, 31), MOMENTO)
+    almacen = RepositorioEnMemoria()
+
+    antes, _ = crear_cliente(
+        [registro("row-1", fecha_de_firma="2026-08-01T00:00:00.000",
+                  valor_del_contrato="1000")]
+    )
+    correr(antes, almacen, estado, ventana=30)
+    # El primer ciclo empujó la marca a HOY; se devuelve al 31 para que el
+    # borde vuelva a ser el 1 de agosto y la prueba mire el borde de verdad.
+    estado.fijar_marca("contratos", date(2026, 8, 31), MOMENTO)
+
+    # Mismo contrato, mismo día de firma, el SECOP le cambió el valor.
+    despues, _ = crear_cliente(
+        [registro("row-1", fecha_de_firma="2026-08-01T00:00:00.000",
+                  valor_del_contrato="1")]
+    )
+    segundo = correr(despues, almacen, estado, ventana=30)
+
+    assert segundo.insertados == 1          # la versión nueva SÍ entra
+    assert segundo.en_borde_de_ventana == 0  # pero no es un contrato nuevo
+    assert segundo.cambiados_en_borde == 1   # es uno que cambió
+    assert not segundo.ventana_corta
+
+
+def test_en_una_misma_pagina_se_separan_los_nuevos_de_los_cambiados(crear_cliente):
+    # Lo normal en el borde es la mezcla. Cada uno tiene que caer en su cuenta.
+    estado = RepositorioEstadoEnMemoria()
+    estado.fijar_marca("contratos", date(2026, 8, 31), MOMENTO)
+    almacen = RepositorioEnMemoria()
+
+    antes, _ = crear_cliente(
+        [registro("viejo", fecha_de_firma="2026-08-01T00:00:00.000", estado="Activo")]
+    )
+    correr(antes, almacen, estado, ventana=30)
+    estado.fijar_marca("contratos", date(2026, 8, 31), MOMENTO)
+
+    despues, _ = crear_cliente([
+        registro("viejo", fecha_de_firma="2026-08-01T00:00:00.000", estado="Cerrado"),
+        registro("nuevo", fecha_de_firma="2026-08-01T00:00:00.000"),
+    ])
+    segundo = correr(despues, almacen, estado, ventana=30)
+
+    assert segundo.en_borde_de_ventana == 1
+    assert segundo.cambiados_en_borde == 1
+    assert segundo.ventana_corta
+
+
 def test_un_registro_publicado_con_retraso_cuenta_como_recuperado(crear_cliente):
     estado = RepositorioEstadoEnMemoria()
     estado.fijar_marca("contratos", date(2026, 8, 20), MOMENTO)
@@ -567,3 +628,58 @@ def test_unos_conteos_incoherentes_se_rechazan():
             insertados=1,
             duplicados=1,
         )
+
+
+def test_un_id_nuevo_que_no_entro_no_se_puede_declarar():
+    # Si un almacén dijera «este id es nuevo» sin haberlo insertado, la alarma
+    # de ventana corta contaría algo que no está en la base. Se rechaza al
+    # construir, que es donde todavía nadie lo ha leído.
+    from vigia.crudo.repositorio import ResultadoGuardado
+
+    with pytest.raises(ValueError, match="id\\(s\\) nuevo"):
+        ResultadoGuardado(
+            insertados=1,
+            duplicados=0,
+            insertadas=frozenset({("row-1", "h1")}),
+            ids_nuevos=frozenset({"row-2"}),
+        )
+
+
+def _ciclo(vistos: int, duplicados: int, estado: str = EstadoCiclo.COMPLETO) -> RegistroDeCiclo:
+    """Un registro de Ciclo con los conteos que se quieren juzgar."""
+    return RegistroDeCiclo(
+        dataset="contratos",
+        cursor_entrada=None,
+        cursor_salida=HOY,
+        desde=date(2026, 8, 1),
+        hasta=HOY,
+        estado=estado,
+        inicio=MOMENTO,
+        fin=MOMENTO,
+        vistos=vistos,
+        insertados=vistos - duplicados,
+        duplicados=duplicados,
+        causa=None if estado == EstadoCiclo.COMPLETO else "interrumpido",
+    )
+
+
+def test_una_corrida_donde_no_se_repite_nada_enciende_la_alarma():
+    # El 2026-09-22: 139.172 vistos, 139.172 insertados, cero duplicados.
+    assert _ciclo(vistos=139_172, duplicados=0).fuente_cambio_todo
+
+
+def test_una_corrida_diaria_normal_no_la_enciende():
+    # El 2026-09-20: 124.345 duplicados de 144.889.
+    assert not _ciclo(vistos=144_889, duplicados=124_345).fuente_cambio_todo
+
+
+def test_una_corrida_chica_no_se_juzga():
+    # Un rango de un día recién publicado trae todo nuevo y eso es normal.
+    assert not _ciclo(vistos=300, duplicados=0).fuente_cambio_todo
+
+
+def test_un_ciclo_fallido_no_enciende_la_alarma():
+    # Se cortó a la mitad: que no se repita nada no dice nada de la fuente.
+    assert not _ciclo(
+        vistos=50_000, duplicados=0, estado=EstadoCiclo.FALLIDO
+    ).fuente_cambio_todo

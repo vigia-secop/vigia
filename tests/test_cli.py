@@ -379,6 +379,27 @@ def test_el_ciclo_incremental_arranca_de_la_marca_menos_la_ventana(
     assert "2026-08-10" in fuente.peticiones[0].url.params["$where"]
 
 
+def test_la_ventana_por_defecto_deja_margen_sobre_el_retraso_observado():
+    """Cuarenta y cinco días, y el número tiene una razón escrita.
+
+    OJO, LA RAZÓN NO ES LA QUE PRIMERO SE DIO. Se subió de 30 a 45 creyendo
+    que se perdían contratos publicados tarde. Medido el 2026-09-20: de los
+    contratos que entraron con más de 30 días, NUEVOS DE VERDAD había cero.
+    La ventana de 30 no perdía contratos.
+
+    Lo que sí hace la de 45 es ver las MODIFICACIONES del SECOP a contratos
+    de entre 31 y 46 días —9.123 en una sola corrida— que con 30 no se
+    habrían visto nunca en su versión nueva. La historia completa está en el
+    comentario de `VENTANA_DIAS_POR_DEFECTO`.
+
+    Esta prueba no defiende el 45. Defiende que bajarlo sea una decisión y
+    no un descuido: quien lo cambie tiene que venir aquí y explicar por qué.
+    """
+    from vigia.__main__ import VENTANA_DIAS_POR_DEFECTO
+
+    assert VENTANA_DIAS_POR_DEFECTO >= 45
+
+
 def test_la_ventana_del_entorno_llega_al_ciclo(fuente_falsa, postgres_falso, monkeypatch):
     from datetime import date, datetime, timezone
 
@@ -417,6 +438,12 @@ def test_la_senal_de_ventana_corta_se_imprime(fuente_falsa, postgres_falso, caps
     from vigia.ingest.estado import MarcaDeAgua, RepositorioEstadoEnMemoria
 
     # Marca en el 31 de agosto, ventana de 30 días: el borde es el 1 de agosto.
+    #
+    # LA VENTANA VA ESCRITA AQUI Y NO SE HEREDA DEL VALOR POR DEFECTO. Esta
+    # prueba es sobre la SEÑAL, no sobre cuántos días trae el proyecto de
+    # fábrica: el 2026-09-20 el defecto pasó de 30 a 45 y esta prueba se cayó
+    # sin que la señal tuviera nada malo. Una prueba que se rompe cuando
+    # cambia algo que no está probando es una prueba que miente.
     fuente_falsa([registro("row-1", fecha_de_firma="2026-08-01T00:00:00.000")])
     memoria_estado = RepositorioEstadoEnMemoria()
     memoria_estado._marcas["contratos"] = MarcaDeAgua(
@@ -424,12 +451,59 @@ def test_la_senal_de_ventana_corta_se_imprime(fuente_falsa, postgres_falso, caps
     )
     postgres_falso(estado=memoria_estado)
 
-    codigo = cli.main(["--dataset", "contratos", "--hasta", "2026-09-02"])
+    codigo = cli.main(
+        ["--dataset", "contratos", "--hasta", "2026-09-02", "--ventana-dias", "30"]
+    )
 
     salida = capsys.readouterr().out
     assert codigo == 0
     assert "VENTANA CORTA" in salida
     assert "--ventana-dias" in salida
+
+
+def test_un_cambio_en_el_borde_se_informa_sin_gritar_ventana_corta(
+    fuente_falsa, postgres_falso, capsys
+):
+    """Lo que la pantalla dijo el 2026-09-20 y lo que debió decir.
+
+    Dijo «VENTANA CORTA: 1506 registro(s) nuevo(s) … antes de perder algo».
+    Eran 1.506 contratos que ya teníamos y que el SECOP modificó. Esa frase,
+    leída por una persona, lleva a ensanchar la ventana por miedo a perder
+    datos, que es lo que pasó. Lo cierto se dice distinto y sin la palabra
+    «perder».
+    """
+    from datetime import date, datetime, timezone
+
+    from vigia.crudo.memoria import RepositorioEnMemoria
+    from vigia.crudo.modelo import RegistroCrudo
+    from vigia.ingest.datasets import CONTRATOS
+    from vigia.ingest.estado import MarcaDeAgua, RepositorioEstadoEnMemoria
+
+    crudo = RepositorioEnMemoria()
+    crudo.guardar_pagina([RegistroCrudo.desde_respuesta(
+        "contratos",
+        registro("row-1", fecha_de_firma="2026-08-01T00:00:00.000",
+                 valor_del_contrato="1000"),
+        datetime(2026, 8, 20, tzinfo=timezone.utc),
+        campos_identidad=CONTRATOS.campos_identidad,
+    )])
+    fuente_falsa([registro("row-1", fecha_de_firma="2026-08-01T00:00:00.000",
+                           valor_del_contrato="1")])
+    memoria_estado = RepositorioEstadoEnMemoria()
+    memoria_estado._marcas["contratos"] = MarcaDeAgua(
+        "contratos", date(2026, 8, 31), datetime(2026, 9, 2, tzinfo=timezone.utc)
+    )
+    postgres_falso(crudo=crudo, estado=memoria_estado)
+
+    codigo = cli.main(
+        ["--dataset", "contratos", "--hasta", "2026-09-02", "--ventana-dias", "30"]
+    )
+
+    salida = capsys.readouterr().out
+    assert codigo == 0
+    assert "VENTANA CORTA" not in salida
+    assert "1 registro(s) que ya teníamos y la fuente modificó" in salida
+    assert "No se perdía nada" in salida
 
 
 def test_el_resumen_muestra_el_avance_de_la_marca(fuente_falsa, postgres_falso, capsys):
@@ -511,3 +585,62 @@ def test_en_dry_run_la_marca_no_se_toca(fuente_falsa, monkeypatch, capsys):
     # El Ciclo en seco se registra en un estado que se tira al salir; nada
     # persiste, y la corrida lo dice.
     assert "nada se escribió" in capsys.readouterr().out
+
+
+def test_la_pantalla_avisa_cuando_la_fuente_cambio_todo():
+    """El 2026-09-22 pasó sin que la pantalla dijera nada.
+
+    La ingesta de contratos vio 139.172 registros y los insertó todos: cero
+    duplicados. En el resumen eso se leía como una línea más de números. La
+    causa era un cambio de formato de la fuente, inofensivo para el dato pero
+    no para el disco; la otra causa posible —que hubieran cambiado las cifras—
+    habría sido grave. Cualquiera de las dos tiene que saltar a la vista.
+    """
+    from datetime import date, datetime, timezone
+
+    from vigia.ingest.estado import EstadoCiclo, RegistroDeCiclo
+
+    momento = datetime(2026, 9, 22, 14, tzinfo=timezone.utc)
+    registro_ciclo = RegistroDeCiclo(
+        dataset="contratos",
+        cursor_entrada=date(2026, 9, 20),
+        cursor_salida=date(2026, 9, 22),
+        desde=date(2026, 8, 8),
+        hasta=date(2026, 9, 22),
+        estado=EstadoCiclo.COMPLETO,
+        inicio=momento,
+        fin=momento,
+        vistos=139_172,
+        insertados=139_172,
+        duplicados=0,
+        desde_derivado=True,
+    )
+
+    salida = cli._describir(registro_ciclo)
+
+    assert "LA FUENTE CAMBIÓ TODO" in salida
+    assert "EJECUTAR-VERIFICAR-FORMATO.bat" in salida
+
+
+def test_una_corrida_normal_no_saca_ese_aviso():
+    from datetime import date, datetime, timezone
+
+    from vigia.ingest.estado import EstadoCiclo, RegistroDeCiclo
+
+    momento = datetime(2026, 9, 20, 14, tzinfo=timezone.utc)
+    registro_ciclo = RegistroDeCiclo(
+        dataset="contratos",
+        cursor_entrada=date(2026, 9, 19),
+        cursor_salida=date(2026, 9, 20),
+        desde=date(2026, 8, 6),
+        hasta=date(2026, 9, 20),
+        estado=EstadoCiclo.COMPLETO,
+        inicio=momento,
+        fin=momento,
+        vistos=144_889,
+        insertados=20_544,
+        duplicados=124_345,
+        desde_derivado=True,
+    )
+
+    assert "LA FUENTE CAMBIÓ TODO" not in cli._describir(registro_ciclo)

@@ -165,6 +165,21 @@ def test_postgres_y_memoria_cuentan_igual(repositorio):
     assert repositorio.guardar_pagina(registros) == memoria.guardar_pagina(registros)
 
 
+def test_postgres_y_memoria_separan_igual_lo_nuevo_de_lo_cambiado(repositorio):
+    # La alarma de ventana corta se apoya en `ids_nuevos`. Si el doble de las
+    # pruebas lo calculara distinto que la base, las pruebas de la alarma
+    # pasarían y la alarma real mentiría.
+    memoria = RepositorioEnMemoria()
+    primera = [_crudo("row-1", valor_del_contrato="1000")]
+    assert repositorio.guardar_pagina(primera) == memoria.guardar_pagina(primera)
+
+    segunda = [_crudo("row-1", valor_del_contrato="1"), _crudo("row-2")]
+    en_base = repositorio.guardar_pagina(segunda)
+    assert en_base == memoria.guardar_pagina(segunda)
+    assert en_base.insertados == 2
+    assert en_base.ids_nuevos == frozenset({"row-2"})
+
+
 def test_un_ciclo_abortado_conserva_las_paginas_ya_confirmadas(dsn, limpiar, crear_cliente):
     from datetime import date
 
@@ -498,6 +513,7 @@ def test_cada_conteo_del_ciclo_llega_a_su_propia_columna(dsn, estado):
             duplicados=12,
             recuperados_por_solapamiento=5,
             en_borde_de_ventana=3,
+            cambiados_en_borde=4,
             sin_fecha_de_hecho=2,
             novedades=("valor_reintegro", "otro_campo"),
             ventana_dias=30,
@@ -509,8 +525,9 @@ def test_cada_conteo_del_ciclo_llega_a_su_propia_columna(dsn, estado):
         cursor.execute(
             "SELECT cursor_entrada, cursor_salida, desde, hasta, paginas, vistos, "
             "insertados, duplicados, recuperados_por_solapamiento, "
-            "en_borde_de_ventana, sin_fecha_de_hecho, huerfanos, novedades, "
-            "ventana_dias, desde_derivado FROM ciclo WHERE dataset = 'contratos'"
+            "en_borde_de_ventana, cambiados_en_borde, sin_fecha_de_hecho, "
+            "huerfanos, novedades, ventana_dias, desde_derivado "
+            "FROM ciclo WHERE dataset = 'contratos'"
         )
         fila = cursor.fetchone()
 
@@ -525,6 +542,7 @@ def test_cada_conteo_del_ciclo_llega_a_su_propia_columna(dsn, estado):
         12,
         5,
         3,
+        4,
         2,
         None,
         ["valor_reintegro", "otro_campo"],

@@ -226,52 +226,120 @@ class TestLaErrataQueElTechoNoAtaja:
                                                      "valor_erratas": 0})
 
 
-class TestElPanelMarcaLaErrataEnLugarDeEsconderla:
-    """En el Panel la fila de Tipacoque encabezaba «Contratos mayores». Ahí es
-    donde la vio el usuario, y ahí es donde tiene que ir el desmentido.
+class TestElPanelApartaLaErrataYLoDice:
+    """La fila de Tipacoque encabezaba «Contratos mayores» y, marcada o no,
+    seguía dentro de los rankings por valor: la fundación que la firmó apareció
+    **segunda entre los proveedores del país** con $433,5 mil millones.
 
-    La fila **no se saca** de la tabla: sacarla sería corregir la fuente a ojo,
-    y Vigía no corrige la fuente. Se marca, y la marca dice contra qué se
-    comparó.
+    Del 11 al 15 de septiembre de 2026 la respuesta fue una etiqueta al lado.
+    No alcanzó, y la razón es sencilla: una etiqueta no le quita el puesto a
+    nadie, y de una tabla se lee el puesto. Desde entonces la regla es la misma
+    que ya tenían los valores imposibles — **fuera de los totales y rankings,
+    declarada en cobertura** —, que es lo contrario de esconderla: apartarla
+    obliga a decir cuántas se apartaron y cuánto sumaban.
+
+    Vigía sigue sin corregir la fuente: no publica un valor «verdadero», dice
+    que ese no se puede sostener y manda a abrir la ficha en el SECOP.
     """
 
     @staticmethod
-    def _panel(marcada: bool):
+    def _panel(cuantas: int, mayor: bool = True):
         from vigia import panel
 
         datos = json.loads(
             (DATOS / "panel-minimo.json").read_text(encoding="utf-8"))
-        datos["contratos_mayores"] = [{
+        datos["cobertura"] = dict(datos.get("cobertura") or {})
+        datos["cobertura"]["errata_potencia_diez"] = cuantas
+        datos["cobertura"]["valor_declarado_errata"] = (
+            431340000000 if cuantas else 0)
+        datos["erratas"] = [{
             "id_contrato": "CO1.PCCNTR.9762242",
-            "proveedor": "FUNDACION MIL COLORES MAS",
             "entidad": "ALCALDÍA MUNICIPAL DE TIPACOQUE",
             "departamento": "BOYACA",
+            "proveedor": "FUNDACION MIL COLORES MAS",
             "valor": 431340000000,
+            "presupuesto_del_proceso": 431340000,
+            "veces": 1000,
+            "enlace": "https://community.secop.gov.co/CO1.PCCNTR.9762242",
+        }] if (cuantas and mayor) else []
+        # Lo que `panel.sql` ya no devuelve: la fila apartada no llega aquí.
+        datos["contratos_mayores"] = [{
+            "id_contrato": "CO1.PCCNTR.0000001",
+            "proveedor": "CONSTRUCTORA DE VERDAD",
+            "entidad": "ENTIDAD CUALQUIERA",
+            "departamento": "BOYACA",
+            "valor": 5000000000,
             "estado": "En ejecución",
             "es_union_temporal": False,
-            "errata_probable": marcada,
-            "valor_probable": 431340000 if marcada else None,
         }]
         return panel.construir(datos)
 
-    def test_la_fila_sigue_en_la_tabla(self):
-        assert "CO1.PCCNTR.9762242" in self._panel(True)
+    def test_declara_cuantas_aparto_y_cuanto_sumaban(self):
+        p = self._panel(1)
+        assert "Contratos con un cero de más" in p
+        assert "$431,3 mil millones" in p
 
-    def test_lleva_la_marca_con_el_valor_del_proceso(self):
-        p = self._panel(True)
-        assert "probable errata" in p
-        assert "$431,3 millones en el proceso" in p
+    def test_dice_que_estan_fuera_de_los_totales(self):
+        # Sin esta frase el lector no sabe si la cifra de arriba las incluye,
+        # y una cobertura que no dice sobre qué se calculó no es cobertura.
+        assert "fuera de todos los totales y rankings" in self._panel(1)
 
-    def test_la_nota_explica_que_es_una_tecla_y_no_un_sobrecosto(self):
-        assert "tecla de más" in self._panel(True)
+    def test_explica_que_es_una_tecla_y_no_un_sobrecosto(self):
+        # La distinción es el aporte entero: un sobrecosto es un hallazgo
+        # contra alguien, una errata de tecleo no lo es.
+        assert "tecla de más" in self._panel(1)
 
-    def test_un_contrato_grande_normal_no_lleva_marca_ni_nota(self):
-        # Esta es la prueba que impide que la marca se vuelva decorado. Un
-        # contrato grande de verdad —y los hay— tiene que salir limpio.
-        p = self._panel(False)
+    def test_no_afirma_cual_es_el_valor_verdadero(self):
+        p = self._panel(1)
+        assert "no afirma cuál es el valor verdadero" in p
+
+    def test_el_aviso_no_sale_cuando_no_hay_ninguna(self):
+        # Misma regla que los valores imposibles: un cartel permanente en cero
+        # se vuelve decorado y deja de leerse el día que deja de ser cero.
+        assert "Contratos con un cero de más" not in self._panel(0)
+
+    def test_apartar_no_es_dejar_de_publicar(self):
+        # LA PRUEBA QUE IMPIDE QUE ESTO SE VUELVA UN TAPADO. Un aviso que
+        # dijera solo «4 contratos, $816,6 mil millones» esconderia el
+        # hallazgo detras de un conteo. El mayor va con nombre.
+        p = self._panel(1)
+        assert "ALCALDÍA MUNICIPAL DE TIPACOQUE" in p
+        assert "FUNDACION MIL COLORES MAS" in p
         assert "CO1.PCCNTR.9762242" in p
-        assert "probable errata" not in p
-        # Se busca el párrafo, no la clase: la regla CSS `.nota-errata` está
-        # siempre en la hoja de estilo, la haya o no. Comprobar la clase
-        # suelta daría una prueba que nunca falla.
-        assert '<p class="nota-errata"' not in p
+
+    def test_pone_las_dos_cifras_juntas(self):
+        # Las dos cifras juntas son el argumento entero: se explica solo y
+        # Vigía no tiene que acusar a nadie para que se entienda.
+        p = self._panel(1)
+        assert "$431,3 mil millones" in p     # lo que la fuente publica
+        assert "$431,3 millones" in p         # el presupuesto de su proceso
+
+    def test_enlaza_la_ficha_del_secop(self):
+        # Sin el enlace, el lector tiene el dato pero no puede comprobarlo,
+        # y Vigía le estaría pidiendo que le crea.
+        assert "community.secop.gov.co/CO1.PCCNTR.9762242" in self._panel(1)
+
+    def test_si_no_hay_enlace_no_se_inventa_uno(self):
+        # Sin enlace la fila sigue saliendo -el dato importa- pero el
+        # identificador va como texto, no como un vinculo que no lleva a nada.
+        from vigia import panel
+
+        fila = {"id_contrato": "CO1.PCCNTR.1", "entidad": "E", "proveedor": "P",
+                "valor": 1000, "presupuesto_del_proceso": 1, "enlace": None}
+        tabla = panel._tabla_de_erratas([fila])
+        assert "CO1.PCCNTR.1" in tabla
+        assert "<a href" not in tabla
+
+    def test_el_ejemplo_no_sale_si_el_json_no_lo_trae(self):
+        # Un JSON viejo, de antes de que existiera `errata_mayor`, tiene que
+        # seguir dibujandose: el aviso se queda sin ejemplo, no sin pagina.
+        p = self._panel(1, mayor=False)
+        assert "Contratos con un cero de más" in p
+        assert "El mayor de los apartados" not in p
+
+    def test_los_contratos_grandes_de_verdad_siguen_saliendo(self):
+        # La prueba que impide que apartar se convierta en podar. Un contrato
+        # grande y real —y los hay— tiene que seguir encabezando la tabla.
+        p = self._panel(1)
+        assert "CO1.PCCNTR.0000001" in p
+        assert "CONSTRUCTORA DE VERDAD" in p

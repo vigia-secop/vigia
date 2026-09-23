@@ -103,3 +103,20 @@ bitacora/
 # El JSON de banderas: lleva el documento entero del contratista. La pagina
 # que sale de el -docs/banderas.html- si se versiona, ya enmascarada.
 /banderas.json
+
+# PLIEGO NO VA EN ESTE REPOSITORIO. Vigia es publico y anonimo; Pliego es el
+# servicio que se cobra. Subir aqui el generador, el filtro por sector y las
+# muestras en PDF los haria publicos y, peor, ataria las dos cosas: cualquiera
+# que mire el repositorio de la veeduria veria el negocio al lado. Si Pliego
+# llega a necesitar control de versiones, va en un repositorio propio y privado.
+/pliego/
+/muestra-ciberseguridad.json
+/muestra-ciberseguridad.sql
+/muestra-ciberseguridad.ps1
+/EJECUTAR-MUESTRA-CIBERSEGURIDAD.bat
+
+# Diagnosticos del escritorio: salidas de consultas de una corrida concreta.
+# El .sql que las produce si se versiona; su resultado no dice nada manana.
+/que-cambio-hoy.txt
+/verificar-formato.txt
+/verificar-cifras.txt

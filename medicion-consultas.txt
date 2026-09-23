@@ -1,0 +1,101 @@
+﻿MEDICION DE CONSULTAS - 2026-09-20 13:51:19
+
+==============================================================
+  0 de 5 : Con que memoria y que costos trabaja la base
+==============================================================
+              name               | setting | unit 
+---------------------------------+---------+------
+ effective_cache_size            | 524288  | 8kB
+ max_parallel_workers_per_gather | 2       | 
+ random_page_cost                | 4       | 
+ seq_page_cost                   | 1       | 
+ shared_buffers                  | 16384   | 8kB
+ work_mem                        | 4096    | kB
+(6 filas)
+
+
+==============================================================
+  1 de 5 : Hace cuanto no se miran las estadisticas (CANDIDATO A)
+==============================================================
+     tabla      | filas_vivas | cambios_sin_mirar |  ultimo_analyze  
+----------------+-------------+-------------------+------------------
+ proceso        |      474930 |                 0 | 2026-09-19 14:15
+ contrato       |      274485 |                 0 | 2026-09-19 14:22
+ crudo_registro |      883444 |                 0 | 2026-09-20 12:37
+ proveedor      |      234975 |                 0 | 2026-09-19 14:18
+(4 filas)
+
+ANALYZE
+ANALYZE
+ANALYZE
+ANALYZE
+
+==============================================================
+  3 de 5 : Como lo hace con las estadisticas frescas
+==============================================================
+                                                                                                                                                                       QUERY PLAN                                                                                                                                                                        
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=146941.87..146941.88 rows=1 width=8) (actual time=22822.449..22822.577 rows=1 loops=1)
+   Buffers: shared hit=21081 read=132343
+   ->  Unique  (cost=146941.85..146941.85 rows=1 width=72) (actual time=22806.723..22820.947 rows=17326 loops=1)
+         Buffers: shared hit=21081 read=132343
+         ->  Sort  (cost=146941.85..146941.85 rows=1 width=72) (actual time=22806.719..22811.433 rows=24287 loops=1)
+               Sort Key: ((crudo_registro.contenido ->> 'id_del_proceso'::text)), crudo_registro.consultado_en DESC
+               Sort Method: quicksort  Memory: 1907kB
+               Buffers: shared hit=21081 read=132343
+               ->  Gather  (cost=1000.00..146941.84 rows=1 width=72) (actual time=33.338..22352.490 rows=24287 loops=1)
+                     Workers Planned: 2
+                     Workers Launched: 2
+                     Buffers: shared hit=21075 read=132343
+                     ->  Parallel Seq Scan on crudo_registro  (cost=0.00..145941.74 rows=1 width=72) (actual time=35.396..22021.488 rows=8096 loops=3)
+                           Filter: ((dataset = 'procesos'::text) AND ((contenido ->> 'precio_base'::text) ~ '^[0-9]+(\.[0-9]+)?$'::text) AND ((contenido ->> 'valor_total_adjudicacion'::text) ~ '^[0-9]+(\.[0-9]+)?$'::text) AND ((contenido ->> 'adjudicado'::text) = 'Si'::text) AND (((contenido ->> 'precio_base'::text))::numeric > '0'::numeric))
+                           Rows Removed by Filter: 286523
+                           Buffers: shared hit=21075 read=132343
+ Planning:
+   Buffers: shared hit=158 read=5
+ Planning Time: 7.641 ms
+ Execution Time: 22827.450 ms
+(20 filas)
+
+
+==============================================================
+  4 de 5 : Prohibiendole usar indice (CANDIDATO B)
+==============================================================
+SET
+SET
+SET
+                                                                                                                                                                       QUERY PLAN                                                                                                                                                                        
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=146941.87..146941.88 rows=1 width=8) (actual time=18549.871..18549.997 rows=1 loops=1)
+   Buffers: shared hit=21411 read=132013
+   ->  Unique  (cost=146941.85..146941.85 rows=1 width=72) (actual time=18532.701..18548.577 rows=17326 loops=1)
+         Buffers: shared hit=21411 read=132013
+         ->  Sort  (cost=146941.85..146941.85 rows=1 width=72) (actual time=18532.697..18538.214 rows=24287 loops=1)
+               Sort Key: ((crudo_registro.contenido ->> 'id_del_proceso'::text)), crudo_registro.consultado_en DESC
+               Sort Method: quicksort  Memory: 1907kB
+               Buffers: shared hit=21411 read=132013
+               ->  Gather  (cost=1000.00..146941.84 rows=1 width=72) (actual time=14.714..18104.206 rows=24287 loops=1)
+                     Workers Planned: 2
+                     Workers Launched: 2
+                     Buffers: shared hit=21405 read=132013
+                     ->  Parallel Seq Scan on crudo_registro  (cost=0.00..145941.74 rows=1 width=72) (actual time=21.546..17942.468 rows=8096 loops=3)
+                           Filter: ((dataset = 'procesos'::text) AND ((contenido ->> 'precio_base'::text) ~ '^[0-9]+(\.[0-9]+)?$'::text) AND ((contenido ->> 'valor_total_adjudicacion'::text) ~ '^[0-9]+(\.[0-9]+)?$'::text) AND ((contenido ->> 'adjudicado'::text) = 'Si'::text) AND (((contenido ->> 'precio_base'::text))::numeric > '0'::numeric))
+                           Rows Removed by Filter: 286523
+                           Buffers: shared hit=21405 read=132013
+ Planning:
+   Buffers: shared hit=163
+ Planning Time: 2.460 ms
+ Execution Time: 18550.912 ms
+(20 filas)
+
+
+==============================================================
+  5 de 5 : Tamano de lo que se recorre
+==============================================================
+    relname     |  tabla  | con_indices 
+----------------+---------+-------------
+ crudo_registro | 1032 MB | 2126 MB
+ proceso        | 254 MB  | 323 MB
+ contrato       | 191 MB  | 248 MB
+(3 filas)
+

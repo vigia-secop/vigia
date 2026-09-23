@@ -1,0 +1,74 @@
+-- EL ÍNDICE QUE LE FALTABA AL DETECTOR DE ERRATAS.
+--
+-- LÉASE PRIMERO: de los tres índices que creaba este archivo quedó uno. Dos
+-- se quitaron el 2026-09-20 porque la medición mostró que el planificador
+-- nunca los usaba. El razonamiento que los justificaba sigue escrito abajo
+-- —sin corregir, a propósito, para que se vea dónde falló— y la corrección
+-- está en el lugar donde estaban. La `011` los borra de las bases que ya
+-- los tienen creados.
+--
+-- Cinco consultas del proyecto —`panel.sql`, `revision.sql`, `portada.sql`,
+-- `boletin.sql` y `archivo.sql`— empiezan igual: buscan en `crudo_registro`
+-- los procesos adjudicados y se quedan con el último registro de cada
+-- `id_del_proceso`, para comparar el valor adjudicado contra el presupuesto.
+-- Ese cruce es lo que detecta las erratas ×10ⁿ, y es el que apartó el
+-- contrato de Tipacoque de todos los totales del sitio.
+--
+-- POR QUÉ DOLÍA. `contenido` es JSONB y `contenido->>'id_del_proceso'` es una
+-- expresión, no una columna: sin un índice sobre esa expresión, cada una de
+-- las cinco consultas recorre la tabla entera de registros crudos —cientos de
+-- miles de documentos JSON— y además los ordena para el `DISTINCT ON`. El
+-- 2026-09-19 el paso de la lista de revisión pasó de cinco minutos a más de
+-- ocho con 262.467 contratos, y todavía no habíamos llegado al archivo.
+--
+-- Se aguanta en un portátil que corre esto una vez al día y a mano. No se
+-- aguanta en un servidor que lo hace solo a las 5:40 de la mañana y tiene que
+-- terminar antes de que alguien abra la página: un ciclo que se alarga sin
+-- que nadie mire es un ciclo que un día se cruza con el siguiente.
+--
+-- EL ÍNDICE ES PARCIAL, y eso no es un detalle. `crudo_registro` guarda los
+-- dos datasets —contratos y procesos— y solo las filas de procesos entran en
+-- este cruce. Indexar únicamente `dataset = 'procesos'` deja un índice más
+-- pequeño, más rápido de mantener en cada ingesta, y que no cobra nada en las
+-- escrituras del otro dataset.
+--
+-- El segundo índice acompaña al `DISTINCT ON (...) ORDER BY ..., consultado_en
+-- DESC`: con las dos columnas en el mismo orden que el ORDER BY, Postgres
+-- puede recorrer el índice y quedarse con la primera fila de cada proceso sin
+-- ordenar nada.
+--
+-- IDEMPOTENTE, como todas las migraciones de esta carpeta: `IF NOT EXISTS` en
+-- las dos, para que el instalador se pueda volver a correr sin pensar.
+
+-- AQUÍ IBAN DOS ÍNDICES SOBRE LOS PROCESOS. SE QUITARON EL 2026-09-20.
+--
+-- Todo lo que está escrito arriba sobre ellos era una teoría mía, y la
+-- medición la tumbó. La consulta que describe el párrafo «POR QUÉ DOLÍA»
+-- se corrió con EXPLAIN ANALYZE con los índices puestos y prohibiéndole
+-- usarlos, y salió el MISMO PLAN las dos veces —`Parallel Seq Scan`— en
+-- 22,8 y 18,5 segundos. PostgreSQL nunca los miró: esa consulta no busca
+-- una fila, recorre las 883.444, y para eso leer de corrido gana.
+--
+-- Lo que sí estaba lento era otra cosa, y no tenía que ver con índices que
+-- faltaran sino con un `LIMIT 1` que hacía elegir el índice equivocado.
+-- Está explicado en `banderas.sql`.
+--
+-- No se borra el texto de arriba: es el razonamiento que me llevó a crearlos
+-- y sirve para no repetirlo. La corrección va en `011`, que los quita de las
+-- bases que ya los tienen.
+--
+-- El de contratos, el de abajo, SÍ se queda: ése se usa y es el que hace que
+-- la página de banderas salga en 27 segundos en vez de nunca.
+
+-- Y el de contratos, por el enlace a la ficha del SECOP: `portada.sql`,
+-- `panel.sql` y `archivo.sql` buscan la URL del proceso por `id_contrato`,
+-- una vez por cada fila que publican. Sin índice es un recorrido completo
+-- por contrato mostrado.
+CREATE INDEX IF NOT EXISTS crudo_contrato_id_idx
+  ON crudo_registro ((contenido->>'id_contrato'))
+  WHERE dataset = 'contratos';
+
+-- ANALYZE para que el planificador sepa que los índices existen y con qué
+-- selectividad. Sin esto puede seguir eligiendo el recorrido completo durante
+-- un rato, y el arreglo parecería no haber servido.
+ANALYZE crudo_registro;

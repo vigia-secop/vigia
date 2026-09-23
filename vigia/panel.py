@@ -27,6 +27,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+from vigia import estilo
 from vigia.documento import escribir as documento
 
 CODIGO_USO = 2
@@ -131,7 +132,8 @@ def _filas_proveedores(datos: dict, completo: bool = False) -> str:
         cuerpo.append(
             "<tr>"
             f'<td class="nom">{e(nombre_legible(f.get("nombre"), documento(f.get("tipo"), f.get("numero"), completo=completo)))}'
-            f'<span class="doc">{e(documento(f.get("tipo"), f.get("numero"), completo=completo))}</span></td>'
+            f'<span class="doc">{e(documento(f.get("tipo"), f.get("numero"), completo=completo))}</span>'
+            "</td>"
             f'<td class="num">{numero(f["contratos"])}</td>'
             f'<td class="num">{numero(f["entidades"])}</td>'
             f'<td class="val" title="{pesos(f["valor"])}">{compacto(f["valor"])}'
@@ -248,7 +250,8 @@ def _filas_entidades(datos: dict) -> str:
     for f in filas:
         cuerpo.append(
             "<tr>"
-            f'<td class="nom">{e(f["nombre"])}<span class="doc">NIT {e(f.get("nit") or "—")}</span></td>'
+            f'<td class="nom">{e(f["nombre"])}<span class="doc">NIT {e(f.get("nit") or "—")}</span>'
+            "</td>"
             f'<td class="num">{numero(f["contratos"])}</td>'
             f'<td class="num">{numero(f.get("proveedores"))}</td>'
             f'<td class="val">{compacto(f["valor"])}</td>'
@@ -272,18 +275,16 @@ def _filas_mayores(datos: dict) -> str:
             '<span class="pill pill-ut">unión temporal</span>'
             if f.get("es_union_temporal") else ""
         )
-        # LA MARCA QUE FALTABA. El 2026-09-11 encabezaba esta tabla la ALCALDÍA
-        # DE TIPACOQUE —unos 3.000 habitantes— con $431.340.000.000. El
-        # presupuesto de su proceso era $431.340.000: el mismo número con tres
-        # ceros de más. La guarda de valores imposibles (1e14) no lo atajó y
-        # nunca pudo, porque 431 mil millones es un contrato posible.
+        # LAS ERRATAS x10^n YA NO LLEGAN HASTA AQUÍ. El 2026-09-11 encabezaba
+        # esta tabla la ALCALDÍA DE TIPACOQUE —unos 3.000 habitantes— con
+        # $431.340.000.000, contra un presupuesto de $431.340.000: el mismo
+        # número con tres ceros de más. Durante cuatro días se marcó la fila y
+        # se dejó donde estaba. No alcanzó: un renglón marcado en un ranking
+        # sigue siendo un renglón en un ranking, y el puesto es lo que se lee.
         #
-        # La fila NO se saca de la tabla: sacarla sería corregir la fuente a
-        # ojo. Se marca, y la marca dice contra qué se comparó.
-        if f.get("errata_probable"):
-            marca += ('<span class="pill pill-errata">probable errata: '
-                      + e(compacto(f.get("valor_probable")))
-                      + " en el proceso</span>")
+        # Desde el 2026-09-15 `panel.sql` las aparta del universo publicable,
+        # igual que los valores imposibles, y declara en cobertura cuántas
+        # apartó y cuánto sumaban. Aquí no queda nada que marcar.
         cuerpo.append(
             "<tr>"
             f'<td class="nom">{e(nombre_legible(f.get("proveedor")))} {marca}'
@@ -293,14 +294,7 @@ def _filas_mayores(datos: dict) -> str:
             f'<td class="val">{compacto(f.get("valor"))}</td>'
             "</tr>"
         )
-    nota = (
-        '<p class="nota-errata">Una fila marcada <strong>probable errata</strong> '
-        "tiene un valor adjudicado que es exactamente mil o diez mil veces el "
-        "presupuesto oficial de su propio proceso. Eso es la firma de una tecla "
-        "de más, no la de un sobrecosto. <strong>No la compartas como hallazgo "
-        "sin abrir antes la ficha del SECOP.</strong></p>"
-        if any(f.get("errata_probable") for f in filas) else ""
-    )
+    nota = ""
     return (
         '<div class="tabla-scroll"><table class="tabla">'
         "<thead><tr><th>Proveedor</th><th>Entidad</th><th>Departamento</th>"
@@ -359,6 +353,7 @@ def _cobertura(datos: dict) -> str:
             "nombre y sin código: «Argelia» son tres municipios distintos.",
         )
         + _fuera_de_escala(c, total)
+        + _errata_potencia_diez(c, total, datos.get("erratas"))
         + "</div>"
     )
 
@@ -394,6 +389,108 @@ def _fuera_de_escala(c: dict, total: int) -> str:
         "que tendría el error si se sumaran. Vigía no corrige la fuente ni adivina "
         "el valor verdadero: los aparta y lo dice. Se listan en «Qué revisar "
         "primero».</p></div>"
+    )
+
+
+def _errata_potencia_diez(c: dict, total: int, erratas: list | None = None) -> str:
+    """Los contratos tecleados con ceros de más, y por qué no están en la tabla.
+
+    **Solo aparece cuando hay alguno**, por la misma razón que el aviso de
+    arriba: un cartel permanente que casi siempre dice cero deja de leerse.
+
+    Este aviso es el que reemplazó a una etiqueta. Del 11 al 15 de septiembre
+    de 2026 el contrato de Tipacoque —$431.340.000.000 contra un presupuesto
+    de $431.340.000— se quedó dentro de los rankings con una marca al lado.
+    Una marca no le quita el puesto a nadie, y el puesto es lo que se lee: la
+    fundación que lo firmó apareció segunda entre los proveedores del país.
+
+    Así que ahora se apartan, como los valores imposibles, y se dice aquí
+    cuántos son y cuánto sumaban. No se corrige la fuente ni se adivina el
+    valor verdadero — eso le toca a quien abra la ficha en el SECOP.
+
+    **APARTAR NO ES DEJAR DE PUBLICAR.** Un aviso que dijera solo «4 contratos,
+    $816,6 mil millones» escondería el hallazgo detrás de un conteo: quien lee
+    no sabría a quién mirar, y eso es justamente lo que sirve. Por eso debajo
+    van **todas**, una por una, con nombre, las dos cifras y el enlace al
+    SECOP. Un valor mal tecleado en una base pública es algo que vale la pena
+    mirar; esconderlo detrás de un número sería el mismo error que sumarlo.
+
+    Lo que cambia respecto de tenerlo en el ranking no es el dato, es la
+    afirmación. En «Proveedores por valor» el renglón dice *este es de los que
+    más contrata del país*, y eso es falso. Aquí dice *este número está mal
+    tecleado, ve y abre la ficha*, que es lo único que se puede sostener.
+    """
+    cuantos = c.get("errata_potencia_diez") or 0
+    if not cuantos:
+        return ""
+    declarado = c.get("valor_declarado_errata") or 0
+    fichas = "esa ficha" if cuantos == 1 else "esas fichas"
+    return (
+        '<div class="medida medida-aviso">'
+        '<div class="medida-cab"><h3>Contratos con un cero de más</h3>'
+        f'<span class="medida-pct">{numero(cuantos)}</span></div>'
+        '<p class="medida-txt"><strong>'
+        f"{numero(cuantos)} de {numero(total)} contratos"
+        f"</strong> declaran un valor que es <strong>exactamente</strong> mil o "
+        "diez mil veces el presupuesto oficial de su propio proceso. Esa es la "
+        "firma de una tecla de más, no la de un sobrecosto. <strong>Están fuera "
+        "de todos los totales y rankings de esta página.</strong></p>"
+        '<p class="medida-det">Suman '
+        f"{compacto(declarado)} tal como la fuente los publica. El mayor de "
+        "ellos llegó a encabezar esta misma página antes de que se detectara. "
+        "<strong>Aquí están todos</strong>, con las dos cifras y el enlace a la "
+        f"ficha oficial: hasta que alguien no abra {fichas} en el SECOP, Vigía "
+        "no afirma cuál es el valor verdadero.</p>"
+        + _tabla_de_erratas(erratas)
+        + "</div>"
+    )
+
+
+def _tabla_de_erratas(erratas: list | None) -> str:
+    """Los contratos apartados, uno por uno, con las dos cifras y el enlace.
+
+    Este bloque es la prueba de que apartar no es tapar, y es lo que el aviso
+    de arriba promete. Sin él la página diría «4 contratos» y el lector se
+    quedaría sin lo único accionable: cuáles, de quién, y dónde verlos.
+
+    **Las dos cifras juntas son el argumento entero.** $431.340.000.000 al
+    lado de $431.340.000 se explica solo, sin que Vigía tenga que acusar a
+    nadie — y el enlace deja que cualquiera lo compruebe en la fuente en vez
+    de creernos.
+
+    Van todas, no una muestra: son pocas por definición, y escoger cuál
+    mostrar sería volver a decidir por el lector.
+    """
+    filas = [f for f in (erratas or []) if f.get("valor")]
+    if not filas:
+        return ""
+    cuerpo = []
+    for f in filas:
+        enlace = str(f.get("enlace") or "")
+        ficha = (
+            f'<a href="{e(enlace)}" target="_blank" rel="noopener noreferrer">'
+            f'{e(f.get("id_contrato") or "ver ficha")}</a>'
+            if enlace.startswith("https://") else e(f.get("id_contrato") or "—")
+        )
+        veces = f.get("veces")
+        cuerpo.append(
+            "<tr>"
+            f'<td class="nom">{e(f.get("entidad") or "—")}'
+            f'<span class="doc">{e(nombre_legible(f.get("proveedor")))}</span>'
+            f'<span class="doc">{ficha}</span></td>'
+            f'<td class="val">{compacto(f.get("valor"))}</td>'
+            f'<td class="val">{compacto(f.get("presupuesto_del_proceso"))}</td>'
+            f'<td class="num">{("×" + numero(veces)) if veces else "—"}</td>'
+            "</tr>"
+        )
+    return (
+        '<div class="tabla-scroll" style="margin-top:12px">'
+        '<table class="tabla"><thead><tr>'
+        "<th>Entidad, contratista y ficha</th>"
+        '<th class="val">Valor publicado</th>'
+        '<th class="val">Presupuesto del proceso</th>'
+        '<th class="num">Veces</th>'
+        "</tr></thead><tbody>" + "".join(cuerpo) + "</tbody></table></div>"
     )
 
 
@@ -563,6 +660,11 @@ section {{ margin: 0 0 44px; }}
   margin: 6px 0 0; font-size: 12.5px; color: var(--tinta-3);
   border-left: 2px solid var(--aviso); padding-left: 9px;
 }}
+/* El contrato apartado, con nombre. Va un punto mas oscuro que el resto del
+   detalle porque es lo unico accionable del aviso: el resto explica, este
+   dice a quien mirar y donde. */
+.medida-ejemplo {{ color: var(--tinta-2); line-height: 1.5; }}
+.medida-ejemplo a {{ color: inherit; }}
 
 /* -------------------------------------------------------------- apilada */
 .apilada {{ display: flex; height: 34px; gap: 2px; }}
@@ -637,6 +739,8 @@ section {{ margin: 0 0 44px; }}
   background: var(--acento-flojo); color: var(--tinta-2); white-space: nowrap;
 }}
 .pill-ut {{ background: var(--aviso-flojo); color: var(--aviso); }}
+.pill-errata {{ background: var(--aviso-flojo); color: var(--aviso);
+  border: 1px solid var(--aviso); display: inline-block; margin-top: 4px; }}
 /* La marca de errata usa el mismo par de tokens de aviso que la unión
    temporal, con borde para que se distinga de ella de un vistazo: las dos
    dicen «ojo con esta fila», pero por motivos distintos. */
@@ -666,6 +770,7 @@ footer {{
   font-family: "IBM Plex Mono", ui-monospace, monospace;
 }}
 @media (prefers-reduced-motion: reduce) {{ * {{ animation: none !important; transition: none !important; }} }}
+{estilo.NAV_CSS}
 </style>
 </head>
 <body>
@@ -674,7 +779,7 @@ footer {{
 
   <header class="cabecera">
     <div class="marca">
-      <h1>Panel de Vigía SECOP</h1>
+      <h1>Vigía SECOP · Panel</h1>
       <span class="sub">La forma de la contratación en la ventana ingerida — y,
         sobre todo, cuánto de ella queda fuera del alcance de cada medición.</span>
     </div>
@@ -683,6 +788,8 @@ footer {{
       <span>generado {e(generado)}</span>
     </div>
   </header>
+
+  {estilo.menu("panel.html")}
 
   <div class="cifras">
     <div class="cifra-caja">

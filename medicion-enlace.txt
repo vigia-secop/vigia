@@ -1,0 +1,95 @@
+﻿PROBAR EL ARREGLO DEL ENLACE - 2026-09-20 14:06:34
+
+==============================================================
+  0 de 3 : Los dos dan el mismo resultado
+==============================================================
+                                                                     forma_vieja                                                                      |                                                                     forma_nueva                                                                      
+------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------
+ https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.263422&isFromPublicArea=True&isModal=true&asPopupView=true | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.263422&isFromPublicArea=True&isModal=true&asPopupView=true
+(1 fila)
+
+
+==============================================================
+  1 de 3 : La forma VIEJA (ORDER BY ... LIMIT 1)
+==============================================================
+                                                                                            QUERY PLAN                                                                                            
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Subquery Scan on c  (cost=0.42..211.88 rows=1 width=32) (actual time=14004.008..14004.012 rows=1 loops=1)
+   Buffers: shared hit=992294 read=125610
+   ->  Limit  (cost=0.42..0.48 rows=1 width=18) (actual time=0.223..0.225 rows=1 loops=1)
+         Buffers: shared hit=2 read=2
+         ->  Index Only Scan using contrato_pkey on contrato  (cost=0.42..14413.70 rows=274485 width=18) (actual time=0.219..0.220 rows=1 loops=1)
+               Heap Fetches: 0
+               Buffers: shared hit=2 read=2
+   SubPlan 1
+     ->  Limit  (cost=0.42..211.41 rows=1 width=40) (actual time=14003.759..14003.760 rows=1 loops=1)
+           Buffers: shared hit=992292 read=125608
+           ->  Index Scan using crudo_registro_rellave_dataset_consultado_en_idx on crudo_registro r  (cost=0.42..345798.60 rows=1639 width=40) (actual time=14003.758..14003.758 rows=1 loops=1)
+                 Index Cond: (dataset = 'contratos'::text)
+                 Filter: ((contenido ->> 'id_contrato'::text) = c.id_contrato)
+                 Rows Removed by Filter: 270888
+                 Buffers: shared hit=992292 read=125608
+ Planning:
+   Buffers: shared hit=254 read=45
+ Planning Time: 9.286 ms
+ Execution Time: 14004.118 ms
+(19 filas)
+
+
+==============================================================
+  2 de 3 : La forma NUEVA (sin LIMIT, se ordena en el array)
+==============================================================
+                                                                             QUERY PLAN                                                                             
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Subquery Scan on c  (cost=0.42..6184.69 rows=1 width=32) (actual time=0.938..0.942 rows=1 loops=1)
+   Buffers: shared hit=37 read=6
+   ->  Limit  (cost=0.42..0.48 rows=1 width=18) (actual time=0.190..0.192 rows=1 loops=1)
+         Buffers: shared hit=2 read=2
+         ->  Index Only Scan using contrato_pkey on contrato  (cost=0.42..14413.70 rows=274485 width=18) (actual time=0.186..0.186 rows=1 loops=1)
+               Heap Fetches: 0
+               Buffers: shared hit=2 read=2
+   SubPlan 1
+     ->  Aggregate  (cost=6184.20..6184.21 rows=1 width=32) (actual time=0.731..0.732 rows=1 loops=1)
+           Buffers: shared hit=35 read=4
+           ->  Sort  (cost=6167.81..6171.91 rows=1639 width=987) (actual time=0.206..0.207 rows=1 loops=1)
+                 Sort Key: r.consultado_en DESC
+                 Sort Method: quicksort  Memory: 25kB
+                 Buffers: shared hit=4 read=3
+                 ->  Index Scan using crudo_contrato_id_idx on crudo_registro r  (cost=0.42..6080.30 rows=1639 width=987) (actual time=0.120..0.121 rows=1 loops=1)
+                       Index Cond: ((contenido ->> 'id_contrato'::text) = c.id_contrato)
+                       Buffers: shared hit=1 read=3
+ Planning:
+   Buffers: shared hit=263 read=45
+ Planning Time: 6.593 ms
+ Execution Time: 1.119 ms
+(21 filas)
+
+
+==============================================================
+  3 de 3 : La forma nueva, cincuenta veces seguidas
+==============================================================
+                                                                             QUERY PLAN                                                                              
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Subquery Scan on c  (cost=0.42..309213.58 rows=50 width=32) (actual time=0.618..23.428 rows=50 loops=1)
+   Buffers: shared hit=293 read=142
+   ->  Limit  (cost=0.42..3.05 rows=50 width=18) (actual time=0.145..0.196 rows=50 loops=1)
+         Buffers: shared hit=4
+         ->  Index Only Scan using contrato_pkey on contrato  (cost=0.42..14413.70 rows=274485 width=18) (actual time=0.141..0.177 rows=50 loops=1)
+               Heap Fetches: 0
+               Buffers: shared hit=4
+   SubPlan 1
+     ->  Aggregate  (cost=6184.20..6184.21 rows=1 width=32) (actual time=0.462..0.462 rows=1 loops=50)
+           Buffers: shared hit=289 read=142
+           ->  Sort  (cost=6167.81..6171.91 rows=1639 width=987) (actual time=0.177..0.178 rows=1 loops=50)
+                 Sort Key: r.consultado_en DESC
+                 Sort Method: quicksort  Memory: 25kB
+                 Buffers: shared hit=155 read=48
+                 ->  Index Scan using crudo_contrato_id_idx on crudo_registro r  (cost=0.42..6080.30 rows=1639 width=987) (actual time=0.172..0.173 rows=1 loops=50)
+                       Index Cond: ((contenido ->> 'id_contrato'::text) = c.id_contrato)
+                       Buffers: shared hit=152 read=48
+ Planning:
+   Buffers: shared hit=308
+ Planning Time: 7.268 ms
+ Execution Time: 23.748 ms
+(21 filas)
+

@@ -68,10 +68,30 @@ CREATE INDEX ON errata (id_del_proceso);
 
 -- Los contratos del día, ya con el valor utilizable. Se materializa porque
 -- casi todas las secciones lo recorren.
-CREATE TEMP TABLE hoy AS
+--
+-- SON DOS TABLAS Y NO UNA, Y ESA ES LA CORRECCIÓN DEL 2026-09-16.
+--
+-- `hoy_todo` es el día entero. `hoy` es el día SIN las erratas ×10ⁿ, y es la
+-- que alimenta todas las cifras que se publican. Antes eran la misma: la
+-- errata se marcaba en «los mayores» y se sumaba en todo lo demás. Una marca
+-- al lado de una fila no le quita el peso a un total.
+--
+-- Con un solo contrato de Tipacoque adentro, «lo que se contrató hoy» pasaba
+-- de $6,8 mil millones a $823,5 mil millones. La página no fallaba: salía,
+-- se leía, y estaba ciento veinte veces mal.
+--
+-- `hoy_todo` se queda para el bloque de calidad, que es donde se declara
+-- cuántas se apartaron y cuánto sumaban. Apartar sin decirlo sería esconder.
+CREATE TEMP TABLE hoy_todo AS
 SELECT * FROM contrato
 WHERE fecha_de_firma = :dia::date
   AND valor_fuera_de_escala IS NOT TRUE;
+
+CREATE TEMP TABLE hoy AS
+SELECT * FROM hoy_todo h
+WHERE NOT EXISTS (
+  SELECT 1 FROM errata e WHERE e.id_del_proceso = h.id_del_proceso
+);
 
 
 SELECT json_build_object(
@@ -201,16 +221,56 @@ SELECT json_build_object(
              h.nombre_entidad                                      AS entidad,
              h.departamento_nombre                                 AS departamento,
              h.valor,
-             (e.id_del_proceso IS NOT NULL)                        AS errata_probable,
-             e.base                                                AS valor_probable,
-             (SELECT r.contenido->'urlproceso'->>'url'
+             -- SIN `LIMIT 1`, a proposito: ver `banderas.sql`. Con LIMIT son
+             -- 14 segundos por contrato, sin LIMIT 1,1 ms. Medido 2026-09-20.
+             (SELECT (array_agg(r.contenido->'urlproceso'->>'url'
+                                ORDER BY r.consultado_en DESC))[1]
               FROM crudo_registro r
               WHERE r.dataset = 'contratos'
-                AND r.contenido->>'id_contrato' = h.id_contrato
-              ORDER BY r.consultado_en DESC LIMIT 1)               AS enlace
-      FROM hoy h LEFT JOIN errata e USING (id_del_proceso)
+                AND r.contenido->>'id_contrato' = h.id_contrato) AS enlace
+      FROM hoy h
       WHERE h.valor IS NOT NULL
       ORDER BY h.valor DESC LIMIT 10
+    ) f
+  ),
+
+  -- LOS APARTADOS DE HOY, PUBLICADOS APARTE.
+  --
+  -- Sacarlos de las cifras no puede significar taparlos. Un valor que no
+  -- cuadra con el presupuesto de su propio proceso ES algo que vale la pena
+  -- mirar: casi seguro es una tecla de mas, pero «casi seguro» no es «seguro»,
+  -- y quien decide eso no es esta pagina — es quien abra la ficha.
+  --
+  -- Por eso salen con nombre, con las DOS cifras al lado y con el enlace al
+  -- SECOP. Las dos cifras juntas se explican solas y no obligan a Vigia a
+  -- acusar a nadie; el enlace deja que cualquiera lo compruebe en la fuente
+  -- en vez de creernos.
+  --
+  -- Misma regla de identidad que arriba: de una persona natural no sale ni el
+  -- nombre ni el documento entero.
+  'erratas', (
+    SELECT json_agg(f) FROM (
+      SELECT h.id_contrato,
+             CASE
+               WHEN h.proveedor_provisional THEN coalesce(h.proveedor_nombre, 'Unión temporal')
+               WHEN h.proveedor_tipo ~* 'c[eé]dula|pasaporte|nuip|tarjeta de identidad|registro civil|permiso (especial|por)'
+                 THEN 'Persona natural'
+               ELSE coalesce(nullif(h.proveedor_nombre, ''), 'Sin razón social')
+             END                                                   AS proveedor,
+             h.nombre_entidad                                      AS entidad,
+             h.departamento_nombre                                 AS departamento,
+             h.valor,
+             e.base                                                AS presupuesto_del_proceso,
+             round(h.valor / nullif(e.base, 0))::bigint            AS veces,
+             -- SIN `LIMIT 1`, a proposito: ver `banderas.sql`.
+             (SELECT (array_agg(r.contenido->'urlproceso'->>'url'
+                                ORDER BY r.consultado_en DESC))[1]
+              FROM crudo_registro r
+              WHERE r.dataset = 'contratos'
+                AND r.contenido->>'id_contrato' = h.id_contrato) AS enlace
+      FROM hoy_todo h JOIN errata e USING (id_del_proceso)
+      WHERE h.valor IS NOT NULL
+      ORDER BY h.valor DESC
     ) f
   ),
 
@@ -249,9 +309,11 @@ SELECT json_build_object(
   --     publica solo lo que le sale bien.
   'calidad', (
     SELECT json_build_object(
-      'erratas_hoy', (SELECT count(*) FROM hoy h JOIN errata e USING (id_del_proceso)),
+      -- Se cuentan sobre `hoy_todo`, que es el día entero: `hoy` ya las
+      -- excluye, y contarlas ahí daría cero para siempre.
+      'erratas_hoy', (SELECT count(*) FROM hoy_todo h JOIN errata e USING (id_del_proceso)),
       'valor_erratas_hoy', (SELECT coalesce(sum(h.valor), 0)
-                            FROM hoy h JOIN errata e USING (id_del_proceso)),
+                            FROM hoy_todo h JOIN errata e USING (id_del_proceso)),
       'erratas_ventana', (SELECT count(*) FROM contrato c JOIN errata e USING (id_del_proceso)),
       'imposibles', (SELECT count(*) FROM contrato WHERE valor_fuera_de_escala),
       'huerfanos_hoy', (SELECT count(*) FROM hoy
@@ -261,4 +323,5 @@ SELECT json_build_object(
 );
 
 DROP TABLE hoy;
+DROP TABLE hoy_todo;
 DROP TABLE errata;

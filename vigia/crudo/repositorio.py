@@ -27,6 +27,19 @@ class ResultadoGuardado:
     #: El Ciclo las necesita para saber CUÁLES eran nuevos y calcular sobre
     #: ellos la señal de ventana corta; un conteo no alcanza para eso.
     insertadas: frozenset[tuple[str, str]] = frozenset()
+    #: De esas llaves, los `id_fila_fuente` que la capa cruda NO tenía en
+    #: ninguna versión antes de esta página: contratos o procesos que nunca
+    #: se habían visto.
+    #:
+    #: POR QUÉ HACE FALTA ADEMÁS DE `insertadas`. Una fila entra a la capa
+    #: cruda por dos razones muy distintas: porque el registro es nuevo, o
+    #: porque ya lo teníamos y la fuente lo modificó —otro hash, misma
+    #: identidad—. La señal de ventana corta contaba las dos como «registros
+    #: nuevos» y el 2026-09-20 dijo 1.506 en el borde. Medido después: de esos,
+    #: nuevos de verdad, cero; los 1.506 eran contratos que ya estaban y
+    #: cambiaron. Esa confusión llevó a creer que la ventana perdía contratos
+    #: y a ensancharla con una razón equivocada.
+    ids_nuevos: frozenset[str] = frozenset()
 
     def __post_init__(self) -> None:
         if self.insertados < 0 or self.duplicados < 0:
@@ -41,6 +54,14 @@ class ResultadoGuardado:
             raise ValueError(
                 f"ResultadoGuardado incoherente: {self.insertados} insertados "
                 f"pero {len(self.insertadas)} llaves"
+            )
+        # Un id no puede ser «nuevo» sin haber entrado: si esto falla, la
+        # señal de ventana corta contaría algo que no está en la base.
+        sobrantes = self.ids_nuevos - {id_fila for id_fila, _ in self.insertadas}
+        if sobrantes:
+            raise ValueError(
+                f"ResultadoGuardado incoherente: {len(sobrantes)} id(s) nuevo(s) "
+                "que no están entre las llaves insertadas"
             )
 
     @property
