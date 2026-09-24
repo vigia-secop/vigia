@@ -683,3 +683,61 @@ def test_un_ciclo_fallido_no_enciende_la_alarma():
     assert not _ciclo(
         vistos=50_000, duplicados=0, estado=EstadoCiclo.FALLIDO
     ).fuente_cambio_todo
+
+
+def _ciclo_con_previo(
+    vistos: int, vistos_previos: int | None, desde_derivado: bool = True
+) -> RegistroDeCiclo:
+    """Un Ciclo de ventana derivada, con el contexto de la corrida anterior."""
+    return RegistroDeCiclo(
+        dataset="contratos",
+        cursor_entrada=date(2026, 9, 22),
+        cursor_salida=HOY,
+        desde=date(2026, 8, 9),
+        hasta=HOY,
+        estado=EstadoCiclo.COMPLETO,
+        inicio=MOMENTO,
+        fin=MOMENTO,
+        vistos=vistos,
+        insertados=vistos,
+        duplicados=0,
+        vistos_previos=vistos_previos,
+        desde_derivado=desde_derivado,
+    )
+
+
+def test_una_caida_de_la_fuente_enciende_la_alarma():
+    # El 2026-09-23: 17 registros donde el dia anterior hubo 139.172.
+    assert _ciclo_con_previo(17, 139_172).fuente_devolvio_casi_nada
+
+
+def test_un_dia_flojo_no_es_una_caida():
+    # Traer la mitad es un dia con menos novedades, no una fuente rota.
+    assert not _ciclo_con_previo(70_000, 139_172).fuente_devolvio_casi_nada
+
+
+def test_sin_ciclo_anterior_no_hay_con_que_comparar():
+    assert not _ciclo_con_previo(17, None).fuente_devolvio_casi_nada
+
+
+def test_un_rango_pedido_a_mano_no_enciende_la_caida():
+    # Un historico de un dia trae poco por definicion.
+    assert not _ciclo_con_previo(17, 139_172, desde_derivado=False).fuente_devolvio_casi_nada
+
+
+def test_el_repositorio_en_memoria_recuerda_los_vistos_del_ultimo_completo():
+    from vigia.ingest.estado import RepositorioEstadoEnMemoria
+
+    repositorio = RepositorioEstadoEnMemoria()
+    assert repositorio.vistos_del_ultimo_ciclo("contratos") is None
+
+    repositorio.cerrar_ciclo(_ciclo(vistos=139_172, duplicados=124_000))
+    assert repositorio.vistos_del_ultimo_ciclo("contratos") == 139_172
+
+    # Un Ciclo fallido no cuenta: vio menos por su propia culpa, y compararse
+    # contra el haria saltar la alarma al dia siguiente sin motivo.
+    repositorio.cerrar_ciclo(_ciclo(vistos=12, duplicados=0, estado=EstadoCiclo.FALLIDO))
+    assert repositorio.vistos_del_ultimo_ciclo("contratos") == 139_172
+
+    # Y otro dataset no se mezcla.
+    assert repositorio.vistos_del_ultimo_ciclo("procesos") is None

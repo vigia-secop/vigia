@@ -341,6 +341,16 @@ def _describir(registro: RegistroDeCiclo) -> str:
             f"con fecha de hecho en {registro.desde.isoformat()}, el día más viejo de "
             "la ventana. Ensánchala con --ventana-dias antes de perder algo."
         )
+    if registro.fuente_devolvio_casi_nada:
+        lineas.append(
+            f"LA FUENTE DEVOLVIÓ CASI NADA: {registro.vistos} registro(s) hoy, "
+            f"frente a {registro.vistos_previos} del Ciclo anterior, con la misma "
+            "ventana y la misma consulta. No se perdió nada de lo guardado: lo que "
+            "no llegó es lo nuevo, y vuelve en la próxima corrida. El 2026-09-23 "
+            "fueron 17 contra 139.172 y era el SECOP republicando el dataset; al día "
+            "siguiente volvieron 135.435. Si se repite mañana, no es la fuente "
+            "reacomodándose: es que dejó de responder lo que tiene."
+        )
     if registro.fuente_cambio_todo:
         repetido = 100 * registro.duplicados / registro.vistos if registro.vistos else 0
         lineas.append(

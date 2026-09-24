@@ -72,6 +72,10 @@ class RegistroDeCiclo:
     huerfanos: int | None = None
     causa: str | None = None
     novedades: tuple[str, ...] = field(default_factory=tuple)
+    #: Cuántos registros vio el último Ciclo completo de este dataset, leído
+    #: antes de empezar. Es contexto para juzgar lo de hoy, no un dato del
+    #: Ciclo: por eso no se guarda en la tabla, solo se usa para avisar.
+    vistos_previos: int | None = None
     #: Con qué ventana corrió, para poder calibrarla leyendo el histórico.
     ventana_dias: int | None = None
     #: `True` si `desde` salió de la marca menos la ventana. La señal de
@@ -162,6 +166,38 @@ class RegistroDeCiclo:
             return False
         return self.duplicados / self.vistos < self.UMBRAL_REPETICION
 
+    #: Por debajo de esta fracción de lo que trajo el Ciclo anterior, lo de hoy
+    #: no es «un día flojo»: es que la fuente no devolvió lo que tiene.
+    UMBRAL_CAIDA = 0.10
+
+    @property
+    def fuente_devolvio_casi_nada(self) -> bool:
+        """Llegó una fracción mínima de lo que traía el Ciclo anterior.
+
+        Pasó el 2026-09-23: la ingesta de contratos vio 17 registros donde el
+        día anterior vio 139.172, con la misma ventana y la misma consulta. La
+        API respondió 200 y el Ciclo terminó «completo». El SECOP estaba
+        republicando el dataset —al día siguiente volvieron 135.435, con una
+        columna nueva—, pero eso nadie lo supo hasta que alguien fue a mirar
+        el registro a mano.
+
+        Una caída así no pierde nada de lo guardado: lo que se deja de recibir
+        es lo nuevo, y vuelve en la siguiente corrida. Lo grave es que no se
+        vea, porque un dataset que deja de crecer en silencio parece un
+        dataset que simplemente no tiene novedades.
+
+        Solo aplica a ventanas derivadas de la marca: en un rango pedido a
+        mano, traer poco es lo normal.
+        """
+        if not self.completo or not self.desde_derivado:
+            return False
+        if (
+            self.vistos_previos is None
+            or self.vistos_previos < self.MINIMO_PARA_JUZGAR_REPETICION
+        ):
+            return False
+        return self.vistos < self.vistos_previos * self.UMBRAL_CAIDA
+
 
 class RepositorioEstado(Protocol):
     """Marca de agua y registro de Ciclos.
@@ -178,6 +214,33 @@ class RepositorioEstado(Protocol):
     def cerrar_ciclo(self, registro: RegistroDeCiclo) -> None:
         ...
 
+    def vistos_del_ultimo_ciclo(self, dataset: str) -> int | None:
+        """Cuántos registros vio el último Ciclo COMPLETO, o `None` si no hay.
+
+        Es lo que permite notar que hoy llegó una fracción de lo de siempre.
+        Solo cuentan los completos: un Ciclo que se cortó a la mitad vio menos
+        por su propia culpa y compararse contra él haría saltar la alarma al
+        día siguiente sin motivo.
+        """
+        ...
+
+
+def vistos_del_ultimo_ciclo(repositorio: object, dataset: str) -> int | None:
+    """Lo mismo, tolerando repositorios que no sepan responderlo.
+
+    El protocolo es estructural y hay implementaciones fuera de este paquete
+    —las de las pruebas, sin ir más lejos—. Que una de ellas no tenga el
+    método no puede tumbar una ingesta: sin contexto previo, simplemente no
+    se enciende la alarma de caída.
+    """
+    metodo = getattr(repositorio, "vistos_del_ultimo_ciclo", None)
+    if metodo is None:
+        return None
+    try:
+        return metodo(dataset)
+    except Exception:  # pragma: no cover - un almacén que falle al consultar
+        return None
+
 
 class RepositorioEstadoEnMemoria:
     """Estado en memoria, para pruebas y corridas en seco."""
@@ -192,6 +255,12 @@ class RepositorioEstadoEnMemoria:
     def fijar_marca(self, dataset: str, fecha_hecho: date, actualizada_en: datetime) -> None:
         """Siembra una marca directamente. Para pruebas y para arranques a mano."""
         self._marcas[dataset] = MarcaDeAgua(dataset, fecha_hecho, actualizada_en)
+
+    def vistos_del_ultimo_ciclo(self, dataset: str) -> int | None:
+        for registro in reversed(self.ciclos):
+            if registro.dataset == dataset and registro.completo:
+                return registro.vistos
+        return None
 
     def cerrar_ciclo(self, registro: RegistroDeCiclo) -> None:
         self.ciclos.append(registro)

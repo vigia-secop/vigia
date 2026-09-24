@@ -15,7 +15,12 @@ from typing import Any, Callable, Mapping, Protocol
 from vigia.crudo.modelo import RegistroCrudo
 from vigia.crudo.repositorio import RepositorioCrudo
 from vigia.ingest.datasets import DatasetSecop
-from vigia.ingest.estado import EstadoCiclo, RegistroDeCiclo, RepositorioEstado
+from vigia.ingest.estado import (
+    EstadoCiclo,
+    RegistroDeCiclo,
+    RepositorioEstado,
+    vistos_del_ultimo_ciclo as leer_vistos_del_ultimo_ciclo,
+)
 from vigia.ingest.socrata import ClienteSocrata
 
 registro_log = logging.getLogger(__name__)
@@ -310,6 +315,10 @@ def ejecutar_ciclo(
     marca = estado.marca(dataset.nombre)
     cursor_entrada = marca.fecha_hecho if marca is not None else None
     desde_derivado = desde is None
+    # Cuánto trajo la vez pasada. Se lee ANTES de ingerir, porque después el
+    # Ciclo de hoy ya es el último. Sirve para notar lo contrario de la alarma
+    # de «cambió todo»: que la fuente devuelva casi nada sin fallar.
+    vistos_previos = leer_vistos_del_ultimo_ciclo(estado, dataset.nombre)
 
     if desde is None:
         if marca is None:
@@ -408,6 +417,7 @@ def ejecutar_ciclo(
         cambiados_en_borde=resumen.cambiados_en_borde,
         sin_fecha_de_hecho=resumen.sin_fecha_de_hecho,
         novedades=resumen.novedades,
+        vistos_previos=vistos_previos,
         ventana_dias=ventana_dias,
         desde_derivado=desde_derivado,
     )

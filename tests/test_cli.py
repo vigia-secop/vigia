@@ -644,3 +644,42 @@ def test_una_corrida_normal_no_saca_ese_aviso():
     )
 
     assert "LA FUENTE CAMBIÓ TODO" not in cli._describir(registro_ciclo)
+
+
+def test_la_pantalla_avisa_cuando_la_fuente_devuelve_casi_nada():
+    """Lo que el 2026-09-23 no dijo nadie.
+
+    La ingesta de contratos vio 17 registros donde el dia anterior vio
+    139.172. Mismo rango, misma consulta, respuesta 200, Ciclo «completo».
+    Era el SECOP republicando el dataset. Se supo al dia siguiente, porque
+    alguien fue a leer la bitacora a mano; sin eso, un dataset que deja de
+    crecer parece un dataset sin novedades.
+    """
+    from datetime import date, datetime, timezone
+
+    from vigia.ingest.estado import EstadoCiclo, RegistroDeCiclo
+
+    momento = datetime(2026, 9, 23, 13, tzinfo=timezone.utc)
+    registro_ciclo = RegistroDeCiclo(
+        dataset="contratos",
+        cursor_entrada=date(2026, 9, 22),
+        cursor_salida=date(2026, 9, 23),
+        desde=date(2026, 8, 8),
+        hasta=date(2026, 9, 23),
+        estado=EstadoCiclo.COMPLETO,
+        inicio=momento,
+        fin=momento,
+        vistos=17,
+        insertados=17,
+        duplicados=0,
+        vistos_previos=139_172,
+        desde_derivado=True,
+    )
+
+    salida = cli._describir(registro_ciclo)
+
+    assert "LA FUENTE DEVOLVIÓ CASI NADA" in salida
+    assert "17 registro(s) hoy" in salida
+    # Y no grita ademas la otra alarma: 17 registros no son «cambio todo»,
+    # son «no llego nada».
+    assert "LA FUENTE CAMBIÓ TODO" not in salida

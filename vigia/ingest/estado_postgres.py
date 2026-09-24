@@ -14,6 +14,16 @@ _LEER_MARCA = """
 SELECT dataset, fecha_hecho, actualizada_en FROM ingesta_marca WHERE dataset = %s
 """
 
+# El último Ciclo COMPLETO, para saber contra qué comparar lo de hoy. Se ordena
+# por `fin` y no por `inicio`: un Ciclo que arrancó antes puede haber terminado
+# después, y lo que interesa es el último del que ya se sabe todo.
+_VISTOS_DEL_ULTIMO_CICLO = """
+SELECT vistos FROM ciclo
+WHERE dataset = %s AND estado = 'completo'
+ORDER BY fin DESC
+LIMIT 1
+"""
+
 _INSERTAR_CICLO = """
 INSERT INTO ciclo (
     dataset, cursor_entrada, cursor_salida, desde, hasta, estado, inicio, fin,
@@ -67,6 +77,21 @@ class RepositorioEstadoPostgres:
         if fila is None:
             return None
         return MarcaDeAgua(dataset=fila[0], fecha_hecho=fila[1], actualizada_en=fila[2])
+
+    def vistos_del_ultimo_ciclo(self, dataset: str) -> int | None:
+        """Cuántos registros vio el último Ciclo completo. `None` si no hay.
+
+        No levanta si la consulta falla: esto es contexto para un aviso, no
+        parte de la ingesta, y quedarse sin el aviso es mucho menos malo que
+        no ingerir.
+        """
+        try:
+            with self._conexion.transaction(), self._conexion.cursor() as cursor:
+                cursor.execute(_VISTOS_DEL_ULTIMO_CICLO, (dataset,))
+                fila = cursor.fetchone()
+        except psycopg.Error:
+            return None
+        return None if fila is None else fila[0]
 
     def cerrar_ciclo(self, registro: RegistroDeCiclo) -> None:
         """Escribe el Ciclo y avanza la marca, o no hace ninguna de las dos.

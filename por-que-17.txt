@@ -1,0 +1,42 @@
+    dia     | filas  | largo_fecha |      ejemplo_menor      |      ejemplo_mayor      
+------------+--------+-------------+-------------------------+-------------------------
+ 2026-09-24 | 135435 |          23 | 2026-08-09T00:00:00.000 | 2026-09-22T00:00:00.000
+ 2026-09-23 |     17 |          23 | 2026-08-09T00:00:00.000 | 2026-09-01T00:00:00.000
+ 2026-09-22 | 139172 |          23 | 2026-08-06T00:00:00.000 | 2026-09-20T00:00:00.000
+ 2026-09-20 |  20544 |          23 | 2026-08-05T00:00:00.000 | 2026-09-19T00:00:00.000
+(4 filas)
+
+     fecha_de_firma      |    estado    |                 entidad                  |   id_fila_fuente   
+-------------------------+--------------+------------------------------------------+--------------------
+ 2026-08-09T00:00:00.000 | Aprobado     | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9755214
+ 2026-08-09T00:00:00.000 | Aprobado     | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9755222
+ 2026-08-09T00:00:00.000 | Aprobado     | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9751406
+ 2026-08-09T00:00:00.000 | En ejecución | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9706970
+ 2026-08-09T00:00:00.000 | Aprobado     | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9755527
+ 2026-08-09T00:00:00.000 | Aprobado     | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9757275
+ 2026-08-09T00:00:00.000 | Aprobado     | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9755019
+ 2026-08-09T00:00:00.000 | Aprobado     | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9752003
+ 2026-08-09T00:00:00.000 | Aprobado     | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9751524
+ 2026-08-09T00:00:00.000 | Aprobado     | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9753501
+ 2026-08-09T00:00:00.000 | En ejecución | ALCALDIA DISTRITAL DE BUENAVENTURA-VALLE | CO1.PCCNTR.9778788
+ 2026-08-09T00:00:00.000 | Aprobado     | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9751258
+ 2026-08-09T00:00:00.000 | Aprobado     | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9751251
+ 2026-08-09T00:00:00.000 | En ejecución | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9743101
+ 2026-08-09T00:00:00.000 | En ejecución | IDRD - ENTIDAD OFICIAL.                  | CO1.PCCNTR.9778185
+ 2026-08-09T00:00:00.000 | Aprobado     | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9751215
+ 2026-08-09T00:00:00.000 | Aprobado     | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9703464
+ 2026-08-09T00:00:00.000 | Aprobado     | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9751404
+ 2026-08-09T00:00:00.000 | Aprobado     | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9751513
+ 2026-08-09T00:00:00.000 | Aprobado     | (Secretaría Distrital de Integración Soc | CO1.PCCNTR.9757440
+(20 filas)
+
+ filas_de_hoy | con_criterios | con_requisitos | ejemplo_criterios 
+--------------+---------------+----------------+-------------------
+       135435 |        135435 |              0 | No
+(1 fila)
+
+ firma_mas_nueva_guardada | contratos_en_crudo 
+--------------------------+--------------------
+ 2026-09-22T00:00:00.000  |             623013
+(1 fila)
+
