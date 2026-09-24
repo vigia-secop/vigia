@@ -120,3 +120,12 @@ bitacora/
 /que-cambio-hoy.txt
 /verificar-formato.txt
 /verificar-cifras.txt
+
+# LAS MEDICIONES NO VAN AL REPOSITORIO. Son la salida de un EXPLAIN o de una
+# consulta de una tarde: numeros de buffers, filas estimadas, milisegundos.
+# Manana no dicen nada, y ademas el guardian de anonimato tiene que mirarlos
+# uno por uno —el 2026-09-24 encontro 63 numeros con forma de documento que
+# eran «shared hit=992294» y «rows=274485»— y aborta la publicacion del sitio.
+# El .ps1 y el .sql que las producen si se versionan: eso es lo repetible.
+/medicion-*.txt
+/erratas-que-cambiaron.txt
