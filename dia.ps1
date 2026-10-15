@@ -124,6 +124,15 @@ Write-Host "  revision.html   que mirar primero, y por que" -ForegroundColor Gra
 if ($rutaSemanal) { Write-Host "  $(Split-Path -Leaf $rutaSemanal)" -ForegroundColor Gray }
 if ($rutaMensual) { Write-Host "  $(Split-Path -Leaf $rutaMensual)" -ForegroundColor Gray }
 Write-Host ""
+# ESTO NO PUBLICA, Y HAY QUE DECIRLO AQUI. `dia.ps1` deja las paginas en el
+# disco; quien las sube a internet es `publicar.ps1`, y los dos juntos son
+# `EJECUTAR-CADA-DIA.bat`. Entre el 2026-10-14 y el 2026-10-15 se corrio este
+# solo: la base quedo al dia y el sitio publico se quedo con los datos
+# viejos, sin un solo error en pantalla. Un paso que falta en silencio es
+# peor que uno que falla.
+Write-Host "  OJO: esto NO publico el sitio. Las paginas quedaron en esta carpeta." -ForegroundColor Yellow
+Write-Host "  Para que internet las vea: EJECUTAR-CADA-DIA.bat (hace esto y ademas publica)." -ForegroundColor Yellow
+Write-Host ""
 
 if (-not $SinAbrir) {
     foreach ($p in @("panel.html", "revision.html")) {

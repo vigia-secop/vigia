@@ -129,3 +129,21 @@ bitacora/
 # El .ps1 y el .sql que las producen si se versionan: eso es lo repetible.
 /medicion-*.txt
 /erratas-que-cambiaron.txt
+
+# NINGUNA SALIDA DE DIAGNOSTICO VA AL REPOSITORIO. Cada consulta nueva deja un
+# .txt con numeros crudos —filas, buffers, conteos— y el guardian de anonimato
+# tiene que revisarlos uno por uno antes de publicar. Cuando encuentra un
+# numero de 6 a 12 digitos que nadie ha mirado, ABORTA la publicacion, que es
+# exactamente lo que debe hacer.
+#
+# Paso dos veces. El 2026-09-24 con `medicion-*.txt`. Y otra vez el 2026-10-06
+# con `por-que-17.txt`: desde ese dia el sitio dejo de publicarse y nadie se
+# entero, porque el ciclo diario seguia corriendo bien. Diez dias de datos
+# frescos en el disco y una pagina vieja en internet.
+#
+# La regla, de aqui en adelante: el .sql y el .ps1 que producen el diagnostico
+# SI se versionan —son lo repetible—; su salida .txt NO.
+/por-que-17.txt
+/buscar-entidad.txt
+/perfil-entidad.txt
+/*-ultima-corrida.txt
