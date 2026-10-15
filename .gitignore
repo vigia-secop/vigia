@@ -109,11 +109,15 @@ bitacora/
 # muestras en PDF los haria publicos y, peor, ataria las dos cosas: cualquiera
 # que mire el repositorio de la veeduria veria el negocio al lado. Si Pliego
 # llega a necesitar control de versiones, va en un repositorio propio y privado.
+# TODO lo de Pliego, no solo el primer sector. La lista escrita a mano se
+# quedo corta el 2026-10-15: `muestra-obra-valle.*` no estaba y se subio sola,
+# con todo y el JSON de 710 KB. Por eso ahora va por patron: cualquier muestra
+# de sector, su consulta, su lanzador y su resultado.
 /pliego/
-/muestra-ciberseguridad.json
-/muestra-ciberseguridad.sql
-/muestra-ciberseguridad.ps1
-/EJECUTAR-MUESTRA-CIBERSEGURIDAD.bat
+/muestra-*.json
+/muestra-*.sql
+/muestra-*.ps1
+/EJECUTAR-MUESTRA-*.bat
 
 # Diagnosticos del escritorio: salidas de consultas de una corrida concreta.
 # El .sql que las produce si se versiona; su resultado no dice nada manana.
@@ -129,21 +133,3 @@ bitacora/
 # El .ps1 y el .sql que las producen si se versionan: eso es lo repetible.
 /medicion-*.txt
 /erratas-que-cambiaron.txt
-
-# NINGUNA SALIDA DE DIAGNOSTICO VA AL REPOSITORIO. Cada consulta nueva deja un
-# .txt con numeros crudos —filas, buffers, conteos— y el guardian de anonimato
-# tiene que revisarlos uno por uno antes de publicar. Cuando encuentra un
-# numero de 6 a 12 digitos que nadie ha mirado, ABORTA la publicacion, que es
-# exactamente lo que debe hacer.
-#
-# Paso dos veces. El 2026-09-24 con `medicion-*.txt`. Y otra vez el 2026-10-06
-# con `por-que-17.txt`: desde ese dia el sitio dejo de publicarse y nadie se
-# entero, porque el ciclo diario seguia corriendo bien. Diez dias de datos
-# frescos en el disco y una pagina vieja en internet.
-#
-# La regla, de aqui en adelante: el .sql y el .ps1 que producen el diagnostico
-# SI se versionan —son lo repetible—; su salida .txt NO.
-/por-que-17.txt
-/buscar-entidad.txt
-/perfil-entidad.txt
-/*-ultima-corrida.txt

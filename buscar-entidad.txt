@@ -1,0 +1,71 @@
+ nit_entidad |                               nombre_entidad                               | contratos | valor_total |  primera   |   ultima   
+-------------+----------------------------------------------------------------------------+-----------+-------------+------------+------------
+ 901140004   | JEP                                                                        |       453 | 21864768785 | 2026-07-07 | 2026-09-21
+ 890399011   | SANTIAGO DE CALI DISTRITO ESPECIAL - SECRETARÍA DE PAZ Y CULTURA CIUDADANA |       377 |  6958341099 | 2026-06-10 | 2026-09-18
+ 800096605   | MUNICIPIO DE LA PAZ+                                                       |       161 | 13058431308 | 2026-06-18 | 2026-09-21
+ 800103659   | MUNICIPIO DE PAZ DE ARIPORO                                                |        85 |  5303736441 | 2026-06-24 | 2026-09-21
+ 891855015   | MUNICIPIO PAZ DE RIO**                                                     |        55 |  1891974620 | 2026-06-12 | 2026-09-18
+ 890399029   | SECRETARIA DE PAZ TERRITORIAL Y RECONCILIACIÓN                             |        53 |   810700200 | 2026-07-08 | 2026-09-21
+ 899999061   | ALCALDIA LOCAL DE SUMAPAZ                                                  |        51 |  1315220894 | 2026-08-05 | 2026-09-21
+ 800024581   | INSTITUTO UNIVERSITARIO DE LA PAZ                                          |        12 |  6353706963 | 2026-06-26 | 2026-09-09
+ 808000859   | ESCUELA DE POLICIA DE PROVINCIA DE SUMAPAZ INTENDENTE MARITZA BONILLA RUIZ |        12 |   562303600 | 2026-06-12 | 2026-09-11
+ 8000293827  | I.E.T SUMAPAZ                                                              |        10 |   155205736 | 2026-06-24 | 2026-09-18
+ 811010070   | Cárcel y Penitenciaria con Alta y Media Seguridad La Paz                   |         5 |    88939502 | 2026-06-11 | 2026-09-18
+ 901767734   | PROVINCIA DMINISTRATIVA Y DE PLANIFICACION - PAP DEL SUMAPAZ               |         3 |   342604150 | 2026-07-16 | 2026-09-02
+ 900219184   | CONCEJO MUNICIPAL DE PAZ DE ARIPORO*                                       |         2 |    11835800 | 2026-06-18 | 2026-08-27
+ 891855015   | PERSONERIA PAZ DE RIO                                                      |         2 |    15554300 | 2026-08-13 | 2026-08-31
+ 809005406   | INSTITUCION EDUCATIVA LA PAZ NO.1                                          |         2 |     8856842 | 2026-07-07 | 2026-09-22
+ 8918550152  | CONCEJO MUNICIPAL PAZ DE RIO                                               |         1 |     6000000 | 2026-07-08 | 2026-07-08
+ 824000566   | CONCEJO MUNICIPAL DE LA PAZ CESAR                                          |         1 |     1797500 | 2026-07-03 | 2026-07-03
+ 800143351   | COLEGIO TÉCNICO AGROPECUARIO NUESTRA SEÑORA DE LA PAZ                      |         1 |     5385474 | 2026-09-18 | 2026-09-18
+(18 filas)
+
+ nit_entidad |                               nombre_entidad                               | procesos |  primera   |   ultima   
+-------------+----------------------------------------------------------------------------+----------+------------+------------
+ 901140004   | JEP                                                                        |      514 | 2026-06-11 | 2026-09-21
+ 819002551   | E.S.E CENTRO DE SALUD PAZ DEL RIO                                          |      501 | 2026-06-10 | 2026-09-09
+ 8300531053  | FONDO COLOMBIA EN PAZ                                                      |      415 | 2026-06-10 | 2026-09-21
+ 890399011   | SANTIAGO DE CALI DISTRITO ESPECIAL - SECRETARÍA DE PAZ Y CULTURA CIUDADANA |      389 | 2026-06-30 | 2026-09-17
+ 800096605   | MUNICIPIO DE LA PAZ+                                                       |      191 | 2026-06-10 | 2026-09-21
+ 800103659   | MUNICIPIO DE PAZ DE ARIPORO                                                |       98 | 2026-06-17 | 2026-09-21
+ 890702190   | HOSPITAL SUMAPAZ E.S.E                                                     |       67 | 2026-06-29 | 2026-09-07
+ 891855015   | MUNICIPIO PAZ DE RIO**                                                     |       61 | 2026-06-10 | 2026-09-07
+ 890399029   | SECRETARIA DE PAZ TERRITORIAL Y RECONCILIACIÓN                             |       54 | 2026-07-08 | 2026-09-21
+ 820002854   | EMPRESA SOCIAL DEL ESTADO CENTRO DE SALUD NUESTRA SEÑORA DE LA PAZ         |       41 | 2026-07-07 | 2026-09-10
+ 899999061   | ALCALDIA LOCAL DE SUMAPAZ                                                  |       34 | 2026-06-11 | 2026-09-22
+ 808000859   | ESCUELA DE POLICIA DE PROVINCIA DE SUMAPAZ INTENDENTE MARITZA BONILLA RUIZ |       33 | 2026-06-11 | 2026-09-22
+ 800024581   | INSTITUTO UNIVERSITARIO DE LA PAZ                                          |       24 | 2026-06-16 | 2026-09-21
+ 901706579   | MAGDALENA - INSTITUCION EDUCATIVA DISTRITAL DE LA PAZ                      |       24 | 2026-09-16 | 2026-09-16
+ 8440013570  | PAZ DE ARIPORO S.A. E.S.P.                                                 |       13 | 2026-07-17 | 2026-09-09
+ 8000293827  | I.E.T SUMAPAZ                                                              |       10 | 2026-06-10 | 2026-09-10
+ 811039784   | INSTITUCIÓN EDUCATIVA LA PAZ                                               |       10 | 2026-07-15 | 2026-09-18
+ 900000876   | INSTITUCION EDUCATIVA MUNICIPAL CIUDADELA DE LA PAZ                        |        9 | 2026-06-24 | 2026-09-09
+ 811017824   | INSTITUCIÓN EDUCATIVA LA PAZ                                               |        9 | 2026-08-04 | 2026-09-21
+ 817002113   | INSTITUCION EDUCATIVA TORIBIO PAZ MONCAYO                                  |        9 | 2026-08-18 | 2026-08-19
+ 811025741   | INSTITUCION EDUCATIVA LA PAZ                                               |        8 | 2026-06-19 | 2026-09-10
+ 804015920   | EMPRESA SOCIAL DEL ESTADO NUESTRA SEÑORA DE LA PAZ - SANTANDER             |        8 | 2026-08-18 | 2026-09-04
+ 829000858   | COLEGIO NUESTRA SEÑORA DE LA PAZ                                           |        6 | 2026-07-30 | 2026-08-28
+ 800143351   | COLEGIO TÉCNICO AGROPECUARIO NUESTRA SEÑORA DE LA PAZ                      |        6 | 2026-08-17 | 2026-08-27
+ 800255013   | INSTITUCION EDUCATIVA NUESTRA SEÑORA DE LA PAZ                             |        6 | 2026-07-27 | 2026-08-13
+ 900932971   | INSTITUCION EDUCATIVA LUSITANIA PAZ DE COLOMBIA                            |        5 | 2026-06-18 | 2026-08-31
+ 805009275   | INSTITUCION EDUCATIVA TECNICA CIUDADELA DESEPAZ CALI                       |        5 | 2026-06-22 | 2026-09-21
+ 807006792   | INSTITUCION EDUCATIVA INSTITUTO TECNICO CRISTO OBRERO - PAZ Y FUTURO       |        5 | 2026-07-03 | 2026-08-03
+ 811010070   | Cárcel y Penitenciaria con Alta y Media Seguridad La Paz                   |        5 | 2026-06-18 | 2026-09-10
+ 821003302   | INSTITUCION EDUCATIVA NUESTRA SEÑORA DE LA PAZ                             |        5 | 2026-08-18 | 2026-08-18
+ 830053105   | FONDO PARA EL DESARROLLO DEL PLAN TODOS SOMOS PAZCÍFICO                    |        5 | 2026-06-12 | 2026-08-27
+ 830099242   | COLEGIO LA PAZ CED                                                         |        5 | 2026-07-06 | 2026-09-21
+ 900036151   | INSTITUCIONETNOEDUCATIVARURALLAPAZ                                         |        5 | 2026-07-16 | 2026-08-13
+ 901274034   | INSTITUCION EDUCATIVA PAZ Y ESPERANZA                                      |        4 | 2026-07-17 | 2026-09-01
+ 901783188   | FINVERPAZ                                                                  |        4 | 2026-07-02 | 2026-08-11
+ 817006642   | INSTITUCION EDUCATIVA LA PAZ                                               |        3 | 2026-06-12 | 2026-08-05
+ 9003701491  | INSTITUCIÓN EDUCATIVA PAZ Y ESPERANZA                                      |        3 | 2026-08-31 | 2026-09-11
+ 901767734   | PROVINCIA DMINISTRATIVA Y DE PLANIFICACION - PAP DEL SUMAPAZ               |        3 | 2026-07-15 | 2026-09-01
+ 802007707   | INSTITUCION EDUCATIVA DISTRITAL COMUNITARIA OCTAVIO PAZ*                   |        3 | 2026-08-13 | 2026-09-10
+ 900219184   | CONCEJO MUNICIPAL DE PAZ DE ARIPORO*                                       |        2 | 2026-08-24 | 2026-09-14
+(40 filas)
+
+ contrato_mas_viejo | contrato_mas_nuevo | contratos | entidades 
+--------------------+--------------------+-----------+-----------
+ 2026-06-10         | 2026-09-22         |    285131 |      2773
+(1 fila)
+

@@ -1,0 +1,97 @@
+ nit_entidad | nombre_entidad | contratos | valor_total | primera_firma | ultima_firma 
+-------------+----------------+-----------+-------------+---------------+--------------
+ 901140004   | JEP            |       453 | 21864768785 | 2026-07-07    | 2026-09-21
+(1 fila)
+
+   mes   | contratos | valor_total | valor_promedio | contrato_mayor 
+---------+-----------+-------------+----------------+----------------
+ 2026-09 |        11 |   284369942 |       25851813 |       38926088
+ 2026-08 |       162 |  6155602469 |       37997546 |      450513105
+ 2026-07 |       280 | 15424796374 |       55088558 |     2445957082
+(3 filas)
+
+                  proveedor                   |                    documento                    | contratos | valor_total | pct_del_total |   desde    |   hasta    
+----------------------------------------------+-------------------------------------------------+-----------+-------------+---------------+------------+------------
+ UT ASEGURADORAS JEP 2026                     | UNION TEMPORAL O CONSORCIO SIN DOCUMENTO CO1*** |         1 |  2445957082 |         11.19 | 2026-07-16 | 2026-07-16
+ TICXAR S.A.S                                 | NIT 900***                                      |         1 |  2134944847 |          9.76 | 2026-07-24 | 2026-07-24
+ CAJA DE COMPENSACION FAMILIAR COMPENSAR      | NIT 860***                                      |         1 |  1199969164 |          5.49 | 2026-07-23 | 2026-07-23
+ PEDRO EDGAR PAEZ PINZON - DIVISIONES PYP     | CEDULA DE CIUDADANIA 952***                     |         1 |   450513105 |          2.06 | 2026-08-03 | 2026-08-03
+ UT AURORA / POSITIVA - JEP                   | NIT 902***                                      |         1 |   388560007 |          1.78 | 2026-07-16 | 2026-07-16
+ SOFTWARE SHOP DE COLOMBIA S.A.S              | NIT 860***                                      |         1 |   311204040 |          1.42 | 2026-07-31 | 2026-07-31
+ DIEGO LUIS OJEDA LEON                        | CEDULA DE CIUDADANIA 807***                     |         1 |   122428255 |          0.56 | 2026-08-03 | 2026-08-03
+ PETRA SOCIEDAD DE TEATRO FUNDACION ARTISTICA | NIT 900***                                      |         1 |   109092500 |          0.50 | 2026-07-07 | 2026-07-07
+ CELIS                                        | CEDULA DE CIUDADANIA 523***                     |         1 |    95368924 |          0.44 | 2026-08-04 | 2026-08-04
+ SEGUROS GENERALES SURAMERICANA S.A.          | NIT 890***                                      |         1 |    89801160 |          0.41 | 2026-07-17 | 2026-07-17
+ ADRIANA CRISTINA ROMERO BELTRAN              | CEDULA DE CIUDADANIA 527***                     |         1 |    87925165 |          0.40 | 2026-07-22 | 2026-07-22
+ CLAUDIA QUICENO MONTOYA                      | CEDULA DE CIUDADANIA 419***                     |         1 |    87925165 |          0.40 | 2026-08-19 | 2026-08-19
+ KARIME CURE REQUENA                          | CEDULA DE CIUDADANIA 109***                     |         1 |    87925165 |          0.40 | 2026-08-13 | 2026-08-13
+ LINA MARIA GARCIA HENAO                      | CEDULA DE CIUDADANIA 377***                     |         1 |    79505535 |          0.36 | 2026-08-03 | 2026-08-03
+ KAREN AILLEEN CALDERON CUESTAS               | CEDULA DE CIUDADANIA 101***                     |         1 |    79505535 |          0.36 | 2026-08-03 | 2026-08-03
+ MARIA PAULA MARTINEZ MENDIETA                | CEDULA DE CIUDADANIA 101***                     |         1 |    78535100 |          0.36 | 2026-08-05 | 2026-08-05
+ SILVIA MARCELA YANEZ MORENO                  | CEDULA DE CIUDADANIA 109***                     |         1 |    70681585 |          0.32 | 2026-08-05 | 2026-08-05
+ LINA ROCIO MURILLO FLOREZ                    | CEDULA DE CIUDADANIA 109***                     |         1 |    70681575 |          0.32 | 2026-08-05 | 2026-08-05
+ ANDRES DAVID FRANCO RODRIGUEZ                | CEDULA DE CIUDADANIA 101***                     |         1 |    70340109 |          0.32 | 2026-08-19 | 2026-08-19
+ LUIS FELIPE BOTERO                           | CEDULA DE CIUDADANIA 973***                     |         1 |    70340109 |          0.32 | 2026-08-19 | 2026-08-19
+(20 filas)
+
+ proveedores | pct_del_primero | pct_de_los_5 | pct_de_los_10 
+-------------+-----------------+--------------+---------------
+         453 |            11.2 |         30.3 |          33.6
+(1 fila)
+
+                  modalidad                  | contratos | pct_contratos |    valor    | pct_valor 
+---------------------------------------------+-----------+---------------+-------------+-----------
+ Contratación régimen especial               |       448 |          98.9 | 16354992584 |      74.8
+ Contratación régimen especial (con ofertas) |         5 |           1.1 |  5509776201 |      25.2
+(2 filas)
+
+          tipo           |    tipo_documento     | contratos |    valor    
+-------------------------+-----------------------+-----------+-------------
+ Prestación de servicios | Cédula de Ciudadanía  |       442 | 14574185255
+ Prestación de servicios | NIT                   |         5 |  3553841794
+ Seguros                 | NIT                   |         2 |   478361167
+ Prestación de servicios | Cédula de Extranjería |         1 |    50706342
+ Otro                    | NIT                   |         1 |   311204040
+ Seguros                 | No Definido           |         1 |  2445957082
+ Suministros             | Cédula de Ciudadanía  |         1 |   450513105
+(7 filas)
+
+   firma    |   valor    |                  modalidad                  |                  proveedor                   |                                           objeto                                           |                                                                         enlace                                                                         
+------------+------------+---------------------------------------------+----------------------------------------------+--------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-07-16 | 2445957082 | Contratación régimen especial (con ofertas) | UT ASEGURADORAS JEP 2026                     | Adquirir las pólizas que conforman el programa de seguros de Jurisdicción Especial Para La | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10347885&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-07-24 | 2134944847 | Contratación régimen especial (con ofertas) | TICXAR S.A.S                                 | RENOVAR POR UN AÑO EL MANTENIMIENTO EVOLUTIVO Y CORRECTIVO DE LOS SERVICIOS DE INTEROPERAB | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10374193&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-07-23 | 1199969164 | Contratación régimen especial               | CAJA DE COMPENSACION FAMILIAR COMPENSAR      | CONTRATAR LA PRESTACIÓN DE SERVICIOS DE BIENESTAR SOCIAL LABORAL PARA EL MEJORAMIENTO DE L | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10522712&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-08-03 |  450513105 | Contratación régimen especial (con ofertas) | PEDRO EDGAR PAEZ PINZON  - DIVISIONES PYP    | SUMINISTRO E INSTALACIÓN DE BIENES PARA EL FUNCIONAMIENTO DE LAS OFICINAS Y ESPACIOS COMPL | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10438190&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-07-16 |  388560007 | Contratación régimen especial (con ofertas) | UT AURORA / POSITIVA - JEP                   | Adquirir las pólizas que conforman el programa de seguros de Jurisdicción Especial Para La | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10347885&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-07-31 |  311204040 | Contratación régimen especial               | SOFTWARE shop DE COLOMBIA S.A.S              | ADQUIRIR SOLUCIONES Y/O SERVICIOS TECNOLÓGICOS ORIENTADOS A LA ANALÍTICA DE DATOS; SOFTWAR | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10598514&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-08-03 |  122428255 | Contratación régimen especial               | DIEGO LUIS OJEDA LEÓN                        | PRESTAR SERVICIOS PROFESIONALES PARA APOYAR A LA SUBDIRECCIÓN DE PLANEACIÓN EN LA DEFINICI | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10623426&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-07-07 |  109092500 | Contratación régimen especial               | PETRA SOCIEDAD DE TEATRO FUNDACIÓN ARTÍSTICA | AUNAR ESFUERZOS PARA REALIZAR ACCIONES COMUNICATIVAS QUE PERMITAN; A TRAVÉS DEL LENGUAJE D | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10420349&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-08-04 |   95368924 | Contratación régimen especial               | CELIS                                        | Prestar servicios profesionales especializados para el diseño; construcción e implementaci | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10621469&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-07-17 |   89801160 | Contratación régimen especial (con ofertas) | SEGUROS GENERALES SURAMERICANA S.A.          | Adquirir las pólizas que conforman el programa de seguros de Jurisdicción Especial Para La | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10347885&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-07-22 |   87925165 | Contratación régimen especial               | ADRIANA CRISTINA ROMERO BELTRAN              | Prestar servicios profesionales especializados para brindar apoyo a la subdirección de con | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10535086&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-08-13 |   87925165 | Contratación régimen especial               | Karime Cure Requena                          | PRESTAR SERVICIOS PROFESIONALES DE ASESORIA JURIDICA PARA APOYAR Y ACOMPAÑAR A LA OFICINA  | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10681525&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-08-19 |   87925165 | Contratación régimen especial               | Claudia Quiceno Montoya                      | Prestar servicios profesionales para apoyar y acompañar a la oficina asesora de monitoreo  | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10688849&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-08-03 |   79505535 | Contratación régimen especial               | Lina María García Henao                      | PRESTAR SERVICIOS PROFESIONALES PARA APOYAR A LA SUBDIRECCIÓN DE PLANEACIÓN EN LA IMPLEMEN | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10618620&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-08-03 |   79505535 | Contratación régimen especial               | KAREN AILLEEN CALDERÓN CUESTAS               | PRESTAR SERVICIOS PROFESIONALES PARA APOYAR A LA SUBDIRECCIÓN DE PLANEACIÓN EN LA GESTIÓN  | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10618442&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-08-05 |   78535100 | Contratación régimen especial               | MARIA PAULA MARTINEZ MENDIETA                | PRESTAR SERVICIOS PROFESIONALES ESPECIALIZADOS PARA ACOMPAÑAR A LA SUBSECRETARÍA EJECUTIVA | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10616389&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-08-05 |   70681585 | Contratación régimen especial               | SILVIA MARCELA YAÑEZ MORENO                  | Prestar servicios profesionales especializados para apoyar y acompañar la Sala de Reconoci | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10568437&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-08-05 |   70681575 | Contratación régimen especial               | LINA ROCÍO MURILLO FLOREZ                    | Prestar servicios profesionales especializados para apoyar y acompañar la sala de reconoci | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10625147&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-08-19 |   70340109 | Contratación régimen especial               | Luis Felipe Botero                           | Prestar servicios profesionales especializados para apoyar las labores de investigación y  | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10702224&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-08-19 |   70340109 | Contratación régimen especial               | Andrés David Franco Rodríguez                | Prestar servicios profesionales especializados para apoyar las labores de investigación y  | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10690218&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-08-03 |   67045070 | Contratación régimen especial               | Silvia Esperanza Botello Moncada             | PRESTAR SERVICIOS PROFESIONALES PARA APOYAR A LA SUBDIRECCIÓN DE PLANEACIÓN EN LA ORIENTAC | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10618705&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-08-03 |   67045070 | Contratación régimen especial               | Daniel Rodríguez Rondón                      | PRESTAR SERVICIOS PROFESIONALES PARA APOYAR A LA SUBDIRECCIÓN DE PLANEACIÓN EN EL ANÁLISIS | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10618554&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-07-21 |   66560141 | Contratación régimen especial               | Juan Sebastian Rivera Galvis                 | Prestar servicios profesionales especializados para asesorar jurídicamente a la Oficina As | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10514886&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-07-27 |   62998783 | Contratación régimen especial               | CRISTHIAN EDUARDO MATUSAN ACUÑA              | PRESTAR SERVICIOS PROFESIONALES PARA APOYAR Y ACOMPAÑAR A LA SECCIÓN DE NO RECONOCIMIENTO  | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10541119&isFromPublicArea=True&isModal=true&asPopupView=true
+ 2026-07-27 |   62998761 | Contratación régimen especial               | ANA MARIA RAMIREZ MOURRAILLE                 | PRESTAR SERVICIOS PROFESIONALES ESPECIALIZADOS PARA APOYAR Y ACOMPAÑAR A LAS SALAS Y SECCI | https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.10541711&isFromPublicArea=True&isModal=true&asPopupView=true
+(25 filas)
+
+ contratos_2026 | pct_directa | pct_prestacion_servicios 
+----------------+-------------+--------------------------
+          58347 |        76.6 |                     84.0
+(1 fila)
+
+ contratos_2026 | pct_directa | pct_prestacion_servicios 
+----------------+-------------+--------------------------
+            453 |         0.0 |                     98.9
+(1 fila)
+
