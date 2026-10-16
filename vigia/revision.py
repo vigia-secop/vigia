@@ -81,7 +81,41 @@ def _tabla(titulo, porque, filas, columnas, encabezados, vacio):
     )
 
 
+def _nota_de_alcance(completo: bool) -> str:
+    """Qué lleva esta página, dicho de frente y distinto en cada versión.
+
+    LA MISMA ADVERTENCIA EN LAS DOS ERA UN ERROR. La versión de escritorio
+    lleva nombres y documentos enmascarados, y por eso dice «no la compartas».
+    La versión que se publica no lleva ninguno de los dos —persona natural sin
+    nombre y con el documento enmascarado— y durante meses salió a internet
+    diciéndole al visitante que no la compartiera y que no le hiciera
+    capturas. Una página pública que se pide a sí misma no ser compartida se
+    lee de una sola manera: que trae algo que no debería traer. Lo que trae es
+    exactamente lo contrario.
+    """
+    if completo:
+        return (
+            '<div class="privado"><strong>Esta página no se comparte.</strong> Lleva '
+            "nombres de contratistas y documentos de personas naturales. Los documentos "
+            "van enmascarados —se ven los últimos tres dígitos, suficiente para "
+            "distinguir dos filas y no para reconstruir un número— pero los nombres y las "
+            "entidades van completos. <strong>No la mandes por chat ni por correo, y no le "
+            "hagas capturas.</strong> Para ir a mirar un contrato al SECOP se usa el "
+            "identificador del contrato, que está completo en la primera columna.</div>"
+        )
+    return (
+        '<div class="privado"><strong>Qué lleva esta página.</strong> El NIT de una '
+        "empresa va completo: donde está el poder está el NIT, y cuánto le contrató el "
+        "Estado a una empresa es control ciudadano sobre dinero público. Una persona "
+        "natural va <strong>sin nombre y con el documento enmascarado</strong> —se ven "
+        "los últimos tres dígitos, lo justo para distinguir dos filas y no para "
+        "reconstruir un número—. Para ver el registro oficial completo está el "
+        "identificador del contrato, que lleva al SECOP.</div>"
+    )
+
+
 def construir(datos: dict, *, completo: bool = False) -> str:
+    nota_de_alcance = _nota_de_alcance(completo)
     v = datos.get("ventana") or {}
     c = datos.get("conteos") or {}
     # Va aparte porque necesita el cruce con Procesos y `conteos` solo recorre
@@ -393,13 +427,7 @@ footer {{ margin-top:44px; padding-top:16px; border-top:1px solid var(--borde);
 
   {resumen}
 
-  <div class="privado"><strong>Esta página no se comparte.</strong> Lleva
-  nombres de contratistas y documentos de personas naturales. Los documentos
-  van enmascarados —se ven los últimos tres dígitos, suficiente para
-  distinguir dos filas y no para reconstruir un número— pero los nombres y las
-  entidades van completos. <strong>No la mandes por chat ni por correo, y no le
-  hagas capturas.</strong> Para ir a mirar un contrato al SECOP se usa el
-  identificador del contrato, que está completo en la primera columna.</div>
+  {nota_de_alcance}
 
   <div class="aviso"><strong>Esto no son alertas.</strong> Ninguna fila de esta
   página afirma que haya un problema con un contrato, una entidad o una persona.

@@ -314,3 +314,42 @@ class TestLaPaletaNoSeSeparaEnDos:
             assert encontrados, f"sitio.py ya no define --{nombre}"
             assert encontrados[0].upper() == valor.upper(), (
                 f"--{nombre}: estilo.py dice {valor}, sitio.py dice {encontrados[0]}")
+
+
+def test_la_portada_explica_el_retraso_de_la_fuente():
+    """Lo que el 2026-10-15 hizo parecer que Vigia estaba muerto.
+
+    La portada mostraba el 13 de octubre con UN contrato y «-100,0 % contra
+    el mismo dia de la semana pasada». No era falso: era el ultimo dia que
+    tenia algo, porque el SECOP publica con dias de retraso. Ahora la pagina
+    muestra el ultimo dia COMPLETO y dice por que no es el de hoy.
+    """
+    from datetime import date
+
+    from vigia.portada import _nota_del_retraso
+
+    nota = _nota_del_retraso(date(2026, 10, 9), "2026-10-15 17:21")
+
+    assert "El SECOP publica con retraso" in nota
+    assert "siguen llenándose" in nota
+
+
+def test_sin_retraso_no_hay_nota():
+    # El dia de ayer no necesita explicacion, y una nota permanente es decorado.
+    from datetime import date
+
+    from vigia.portada import _nota_del_retraso
+
+    assert _nota_del_retraso(date(2026, 10, 14), "2026-10-15 17:21") == ""
+    assert _nota_del_retraso(date(2026, 10, 15), "2026-10-15 17:21") == ""
+
+
+def test_una_fecha_de_generacion_ilegible_no_tumba_la_portada():
+    # El JSON viene de psql; si algun dia cambia el formato, la pagina se
+    # dibuja igual y solo se pierde la nota.
+    from datetime import date
+
+    from vigia.portada import _nota_del_retraso
+
+    assert _nota_del_retraso(date(2026, 10, 9), "") == ""
+    assert _nota_del_retraso(date(2026, 10, 9), "ayer por la tarde") == ""

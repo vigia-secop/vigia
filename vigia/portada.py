@@ -123,6 +123,34 @@ def _nota_del_dia(d: date) -> str:
     return ""
 
 
+def _nota_del_retraso(d: date, generado: str) -> str:
+    """Por qué el día de la portada no es el de hoy.
+
+    El SECOP publica con dos a cinco días de retraso, así que el día más
+    reciente de la base siempre está a medio llenar. La portada muestra el
+    último día COMPLETO —ver la consulta en `portada.ps1`—, y eso hay que
+    decirlo: sin esta línea, la página parece vieja cuando en realidad es la
+    fuente la que va atrás.
+
+    Cadena vacía cuando el día mostrado es el de ayer o el de hoy: ahí no hay
+    nada que explicar.
+    """
+    try:
+        rehecha = date.fromisoformat(generado[:10])
+    except ValueError:
+        return ""
+    dias = (rehecha - d).days
+    if dias <= 1:
+        return ""
+    return (
+        f"<strong>El SECOP publica con retraso.</strong> Esta página se rehízo "
+        f"el {_dia_mes(rehecha)}, y el último día ya "
+        f"completo en la fuente es el que se muestra. Los días posteriores "
+        f"siguen llenándose: mostrarlos como si estuvieran cerrados haría ver "
+        f"una caída donde solo hay demora."
+    )
+
+
 def _serie_svg(serie: list) -> str:
     """Veintiocho días de contratos firmados.
 
@@ -358,7 +386,14 @@ def construir(datos: dict) -> str:
         cl_contratos = cl_valor = "neutro"
 
     nota_dia = _nota_del_dia(d)
+    # El retraso de la fuente se explica aqui o no se explica en ninguna parte.
+    # Un visitante que entra un jueves y ve el lunes como «hoy» concluye que
+    # Vigia esta desactualizado; la verdad es que el SECOP publica con dias de
+    # diferencia y lo que se muestra es el ultimo dia ya completo.
+    nota_retraso = _nota_del_retraso(d, generado)
     aviso_dia = f'<p class="festivo">{nota_dia}</p>' if nota_dia else ""
+    if nota_retraso:
+        aviso_dia += f'<p class="festivo">{nota_retraso}</p>' 
 
     mediana, promedio = c.get("mediana"), c.get("promedio")
     brecha = ""

@@ -343,3 +343,31 @@ class TestElPanelApartaLaErrataYLoDice:
         p = self._panel(1)
         assert "CO1.PCCNTR.0000001" in p
         assert "CONSTRUCTORA DE VERDAD" in p
+
+
+def test_la_pagina_publica_no_se_pide_a_si_misma_no_ser_compartida():
+    """Lo que el sitio publico dijo durante meses sin que nadie lo leyera.
+
+    La version de escritorio lleva nombres de contratistas y por eso advierte
+    «no la compartas». La publica no lleva ninguno —persona natural sin nombre
+    y con el documento enmascarado— y salia a internet con esa misma
+    advertencia. Una pagina publica que pide no ser compartida solo se puede
+    leer de una manera: que trae algo que no debia traer. Trae lo contrario.
+    """
+    from vigia.revision import _nota_de_alcance
+
+    publica = _nota_de_alcance(completo=False)
+
+    assert "no se comparte" not in publica
+    assert "capturas" not in publica
+    assert "sin nombre y con el documento enmascarado" in publica
+
+
+def test_la_version_de_escritorio_si_advierte():
+    # Esa si lleva nombres: la advertencia es correcta y se queda.
+    from vigia.revision import _nota_de_alcance
+
+    escritorio = _nota_de_alcance(completo=True)
+
+    assert "Esta página no se comparte" in escritorio
+    assert "No la mandes por chat ni por correo" in escritorio

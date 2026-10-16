@@ -323,8 +323,31 @@ def _cobertura(datos: dict) -> str:
             + "</div>"
         )
 
+    # DOS TOTALES EN LA MISMA PÁGINA SE LEEN COMO UN ERROR. Arriba dice
+    # «338.651 contratos» y aquí «de 338.654»: la diferencia son las erratas
+    # ×10ⁿ, que se apartan de los totales de valor pero siguen siendo
+    # contratos publicados y por eso cuentan en la cobertura. Es correcto y
+    # parece una contradicción, que en una página de control es casi lo mismo:
+    # quien la mira con lupa —y la van a mirar con lupa— se queda con la duda.
+    # Se dice en una línea y se acaba la duda.
+    publicados = datos.get("ventana", {}).get("contratos")
+    aparte = ""
+    if publicados and publicados != total:
+        diferencia = total - publicados
+        aparte = (
+            f'<p class="medida-txt">Esta sección cuenta sobre los '
+            f'<strong>{numero(total)}</strong> contratos publicados. Los totales de '
+            f'arriba son {numero(publicados)}: '
+            f'{"son" if diferencia != 1 else "es"} {numero(diferencia)} '
+            f'{"menos" if diferencia > 0 else "más"} porque '
+            f'{"los contratos con un cero de más quedan" if diferencia != 1 else "el contrato con un cero de más queda"} '
+            f'fuera de toda suma de valor. Siguen contándose aquí porque existen '
+            f'y hay que poder verlos.</p>'
+        )
+
     return (
         '<div class="medidas">'
+        + aparte
         + medida(
             "Concentración por proveedor",
             real, total - real,

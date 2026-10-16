@@ -252,15 +252,43 @@ if ($LASTEXITCODE -ne 0) { Mal "no se pudo construir la lista de revision public
 # Un ano de portadas sin un hueco y sin una cifra desmentida es lo que
 # convierte a Vigia en algo que alguien cita.
 #
-# Se usa el ultimo dia con contratos, no "hoy": SECOP publica con rezago y una
-# portada en blanco por haber corrido a las seis de la manana se lee como que
-# el sitio esta roto.
+# Se usa el ultimo dia COMPLETO, no "hoy" ni el ultimo con algo. SECOP publica
+# con dos a cinco dias de rezago, asi que el dia mas reciente de la base esta
+# siempre a medio llenar y una portada hecha sobre el miente dos veces: dice
+# que se contrato poco y, peor, dibuja una caida enorme contra la semana
+# pasada. El 2026-10-15 la portada mostro el 13 de octubre con UN contrato y
+# "-100,0 %"; con un umbral mal puesto mostro el 14 con 999 y "-73,3 %",
+# cuando un miercoles normal pasa de 3.500. Ninguna de las dos cifras era
+# falsa y las dos daban la impresion contraria a la verdad.
+#
+# Un dia se considera completo cuando ya tiene al menos el 60 % de los
+# contratos de un dia habil tipico de las ultimas semanas. Los dias a medio
+# llenar se quedan fuera hasta que la fuente termine de publicarlos, y la
+# portada lo dice con todas sus letras (ver `_nota_del_retraso` en
+# `vigia/portada.py`).
 Write-Host ""
 Write-Host "== 2c de 4 : La portada del dia" -ForegroundColor Cyan
-$ultimo = (& $PSQL -h localhost -U vigia -d vigia -tA -c `
-    "SELECT max(fecha_de_firma) FROM contrato WHERE valor_fuera_de_escala IS NOT TRUE" 2>&1).Trim()
-if (-not ($ultimo -match '^\d{4}-\d{2}-\d{2}$')) { Mal "no pude averiguar el ultimo dia con contratos" }
-Write-Host "   Ultimo dia con contratos: $ultimo" -ForegroundColor DarkGray
+$consultaUltimo = @"
+WITH dias AS (
+  SELECT fecha_de_firma AS dia, count(*) AS n
+  FROM contrato
+  WHERE valor_fuera_de_escala IS NOT TRUE
+    AND fecha_de_firma > current_date - 60
+  GROUP BY 1
+),
+tipico AS (
+  SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY n) AS m
+  FROM dias
+  WHERE n >= 300
+)
+SELECT coalesce(
+  (SELECT max(dia) FROM dias, tipico WHERE tipico.m IS NOT NULL AND n >= 0.6 * tipico.m),
+  (SELECT max(dia) FROM dias)
+)
+"@
+$ultimo = (& $PSQL -h localhost -U vigia -d vigia -tA -c $consultaUltimo 2>&1).Trim()
+if (-not ($ultimo -match '^\d{4}-\d{2}-\d{2}$')) { Mal "no pude averiguar el ultimo dia completo" }
+Write-Host "   Ultimo dia completo: $ultimo" -ForegroundColor DarkGray
 & $PSQL -q -h localhost -U vigia -d vigia -tA -v dia="'$ultimo'" -f "portada.sql" -o "portada.json" 2>&1 | Sin-Rojo
 if ($LASTEXITCODE -ne 0) { Mal "fallo la consulta de la portada" }
 & $pyExe @pyArgs -m vigia.portada --json "portada.json" --salida "docs\index.html" 2>&1 | Sin-Rojo
